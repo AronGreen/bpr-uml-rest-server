@@ -9,6 +9,7 @@ app = Flask(__name__)
 
 app.register_blueprint(workspace_api)
 
+settings.ensure_firebase_config()
 default_app = fb_admin.initialize_app()
 
 
