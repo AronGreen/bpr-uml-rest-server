@@ -7,7 +7,8 @@
 			  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
 			  crossorigin="anonymous"></script>
     <script type="text/javascript" charset="utf-8">
-      var socket = io.connect('https://bpr-uml-rest-server.herokuapp.com/');
+      var socket = io.connect('https://bpr-uml-socket-server.herokuapp.com/');
+      console.log(io)
       socket.on('echo', function(data){
         $('#response').html('<p>'+data.echo+'</p>');
       });
