@@ -7,7 +7,7 @@
 			  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
 			  crossorigin="anonymous"></script>
     <script type="text/javascript" charset="utf-8">
-      var socket = io.connect(location.protocol + '//' + location.host + ':' + 5000);
+      var socket = io.connect('https://bpr-uml-rest-server.herokuapp.com/');
       socket.on('echo', function(data){
         $('#response').html('<p>'+data.echo+'</p>');
       });
@@ -36,6 +36,7 @@
         <button type="button" onclick="send(); return false;">Send</button>
       </form>
     </div>
+    <p>Response from https://bpr-uml-rest-server.herokuapp.com/</p>
     <div id="response">
     </div>
   </body>
