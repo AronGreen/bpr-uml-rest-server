@@ -2,7 +2,6 @@ from datetime import datetime
 from enum import Enum
 import pymongo as mongo
 import settings
-import json
 
 class Collection(Enum):
     DEBUG_LOG = "debug_log"
@@ -16,7 +15,7 @@ def debug_log(content: dict, note: str):
     item = {
         'date': str(datetime.now()),
         'note': note,
-        'content':json.dumps(content)
+        'content':repr(content)
     }
     insert_one(item, Collection.DEBUG_LOG)
 
