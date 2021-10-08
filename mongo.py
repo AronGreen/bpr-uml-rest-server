@@ -1,4 +1,3 @@
-from datetime import datetime
 from enum import Enum
 import pymongo as mongo
 import settings
@@ -19,6 +18,8 @@ def debug_log(content):
         'content':content
     }
     insert_one(item, Collection.DEBUG_LOG)
+    APPLICATION_LOG = 'application_log'
+    WORKSPACE = 'workspace'
 
 
 def insert_one(item, collection: Collection):
@@ -35,7 +36,7 @@ def find_one_with_filter(id, filter, collection: Collection):
 
 
 def __get_collection(collection: Collection):
-    client = mongo.MongoClient(f"{settings.MONGO_PROTOCOL}://{settings.MONGO_USER}:{settings.MONGO_PW}@{settings.MONGO_HOST}/{settings.MONGO_DEFAULT_DB}?retryWrites=true&w=majority")
+    client = mongo.MongoClient(f'{settings.MONGO_PROTOCOL}://{settings.MONGO_USER}:{settings.MONGO_PW}@{settings.MONGO_HOST}/{settings.MONGO_DEFAULT_DB}?retryWrites=true&w=majority')
     db = client.get_default_database()
     return db[collection.value]
 
