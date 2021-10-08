@@ -18,7 +18,7 @@ def ensure_firebase_config():
         "type": os.environ['FB_CONF_TYPE'],
         "project_id": os.environ['FB_CONF_PROJECT_ID'],
         "private_key_id":  os.environ['FB_CONF_PRIVATE_KEY_ID'],
-        "private_key": os.environ['FB_CONF_PRIVATE_KEY'],
+        "private_key": os.environ['FB_CONF_PRIVATE_KEY'].replace("\\n", "\n"),
         "client_email":  os.environ['FB_CONF_CLIENT_EMAIL'],
         "client_id": os.environ['FB_CONF_CLIENT_ID'],
         "auth_uri":  os.environ['FB_CONF_AUTH_URI'],
