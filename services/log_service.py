@@ -1,5 +1,5 @@
 from enum import Enum
-import datetime
+from datetime import datetime
 import mongo as db
 
 
