@@ -2,20 +2,21 @@ from datetime import datetime
 from enum import Enum
 import pymongo as mongo
 import settings
+import json
 
 class Collection(Enum):
     DEBUG_LOG = "debug_log"
     WORKSPACE = "workspace"
 
 
-def debug_log(content, note):
+def debug_log(content: dict, note: str):
     """
     Storage for debug log
     """
     item = {
-        'date': datetime.now,
+        'date': str(datetime.now()),
         'note': note,
-        'content':content
+        'content':json.dumps(content)
     }
     insert_one(item, Collection.DEBUG_LOG)
 
