@@ -1,6 +1,7 @@
 from logging import error
 from flask import Flask, render_template, request
 from api.workspace import workspace_api
+from api.users import users_api
 import settings
 import firebase_admin as fb_admin
 from firebase_admin import auth as fb_auth
@@ -10,6 +11,7 @@ import mongo as db
 app = Flask(__name__)
 
 app.register_blueprint(workspace_api)
+app.register_blueprint(users_api)
 
 settings.ensure_firebase_config()
 default_app = fb_admin.initialize_app()

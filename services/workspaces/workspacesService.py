@@ -1,4 +1,8 @@
+from models.workspace import Workspace
 import repositories.workspaceRepo as repo
 
-def createWorkspace(workspace_json) :
-    return repo.insertWorkspace(workspace_json)
+def createWorkspace(workspace : Workspace) :
+    return repo.insertWorkspace(workspace)
+
+def getWorkspaceName(workspaceId):
+    return repo.getWorkspaceName(workspaceId)

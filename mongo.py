@@ -2,10 +2,12 @@ from datetime import datetime
 from enum import Enum
 import pymongo as mongo
 import settings
+from bson.objectid import ObjectId
 
 class Collection(Enum):
     DEBUG_LOG = "debug_log"
     WORKSPACE = "workspace"
+    USER = "user"
 
 
 def debug_log(content):
@@ -22,6 +24,14 @@ def debug_log(content):
 def insert_one(item, collection: Collection):
     col = __get_collection(collection)
     return col.insert_one(item)
+
+def find_one(id, collection: Collection):
+    col = __get_collection(collection)
+    return col.find_one( { "_id": ObjectId(id) } )
+
+def find_one_with_filter(id, filter, collection: Collection):
+    col = __get_collection(collection)
+    return col.find_one( { "_id": ObjectId(id) }, filter )
 
 
 def __get_collection(collection: Collection):
