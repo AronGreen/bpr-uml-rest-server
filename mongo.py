@@ -8,12 +8,13 @@ class Collection(Enum):
     WORKSPACE = "workspace"
 
 
-def debug_log(content):
+def debug_log(content, note):
     """
     Storage for debug log
     """
     item = {
         'date': datetime.now,
+        'note': note,
         'content':content
     }
     insert_one(item, Collection.DEBUG_LOG)
