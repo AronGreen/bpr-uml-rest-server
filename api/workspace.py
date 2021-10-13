@@ -1,4 +1,7 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, g
+import json
+
+from flask.wrappers import Response
 from models.workspace import Workspace
 import services.workspaces.workspacesService as service
 
@@ -12,5 +15,14 @@ def createWorkspace():
         workspaceName = request_data['workspaceName']
         return service.createWorkspace(Workspace(creatorId, workspaceName))
     return "Creator id and workspace name required"
+
+
+@workspace_api.route("/workspaces", methods=['GET'])
+def get_workspaces():
+    user_id = g.user_id
+    data = service.get_user_workspaces(user_id)
+    result = json.dumps(data, default=str)
+    return Response(result, mimetype="application/json")
+     
 
 
