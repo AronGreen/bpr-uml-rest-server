@@ -14,6 +14,3 @@ def createWorkspace():
     return "Creator id and workspace name required"
 
 
-@workspace_api.route("/test", methods=['GET'])
-def test():
-    return "Testy test"

@@ -26,8 +26,9 @@ def log(content, note: str, log_level: LogLevel):
         note = ''
     item = {
         'timestamp': str(datetime.now()),
-        'log_level' : log_level,
+        'utc_timestamp': str(datetime.utcnow()),
+        'log_level' : repr(log_level),
         'note': note,
         'content':repr(content)
     }
-    db.insert_one(item, db.Collection.APPLICATION_LOG)
+    db.insert_one(item, db.Collection.DEBUG_LOG)
