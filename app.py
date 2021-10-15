@@ -35,10 +35,11 @@ def check_auth():
     if request.path in ('/'):
         return
     try: 
-        id_token = request.json['idToken']
+        id_token = request.headers.get('accessToken')
         decoded_token = fb_auth.verify_id_token(id_token)
         g.user_email = decoded_token['email']
         g.user_id = decoded_token['user_id']
+        g.user_name = decoded_token['name']
     except (fb_auth.RevokedIdTokenError, fb_auth.CertificateFetchError, fb_auth.UserDisabledError, fb_auth.ExpiredIdTokenError) as err:
         log_error(err, "Authentication - expired token exception")
         abort(401)

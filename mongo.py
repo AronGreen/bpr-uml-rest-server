@@ -16,17 +16,20 @@ def insert_one(item, collection: Collection):
     return col.insert_one(item)
 
 
-def find_one(id, collection: Collection):
+def find_one(id: str, collection: Collection):
     col = __get_collection(collection)
     return col.find_one( { "_id": ObjectId(id) } )
 
 # TODO: look into **kwargs in stead of filter
-def find_one_with_filter(id, filter, collection: Collection):
+def find_one_with_filter(id: str, filter: dict, collection: Collection):
     col = __get_collection(collection)
     return col.find_one( { "_id": ObjectId(id) }, filter )
 
+def find_from_query(query: dict, collection: Collection):
+    col = __get_collection(collection)
+    return col.find(query)
 
-def find(filter, collection: Collection):
+def find(filter: dict, collection: Collection):
     col = __get_collection(collection)
     if filter is None:
         return col.find()
