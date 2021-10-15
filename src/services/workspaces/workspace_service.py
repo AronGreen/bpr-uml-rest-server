@@ -13,14 +13,6 @@ def get_workspace_ame(workspaceId):
 
 
 def get_user_workspaces(user_id: str):
-    return repo.get_user_workspaces(user_id=user_id)
-
-
-def getWorkspaceName(workspaceId: str):
-
-
-
-def get_user_workspaces(user_id: str):
     # TODO: filter so only current users workspaces are present
     result = {'results': []}
     for x in db.find(None, collection=collection):
