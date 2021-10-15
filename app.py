@@ -1,3 +1,4 @@
+from bson.objectid import ObjectId
 from flask import Flask, render_template, request, g, abort
 from flask_cors import CORS
 
@@ -8,6 +9,9 @@ from services.log_service import log_error
 from api.users import users_api
 from api.workspace import workspace_api
 import settings
+from src import repository
+import json
+from bson import json_util
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -23,6 +27,14 @@ default_app = fb_admin.initialize_app()
 def index():
     return render_template('./index.html',)
 
+@app.route('/mate')
+def mate():
+    result = repository.find(repository.Collection.MATE_TEST, name2='mate')[0]
+    result['name2'] = 'hellooooo'
+    print(result)
+    repository.update(repository.Collection.MATE_TEST, result)
+    return json_util.dumps(repository.find(repository.Collection.MATE_TEST, name2='hellooooo'))
+
 
 # ref: https://firebase.google.com/docs/auth/admin/manage-cookies
 @app.route('/logged_in', methods=['POST'])
@@ -32,7 +44,7 @@ def session_login():
 
 @app.before_request
 def check_auth():
-    if request.path in ('/'):
+    if request.path in ('/', '/mate', '/favicon.ico'):
         return
     try: 
         id_token = request.json['idToken']

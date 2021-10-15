@@ -17,11 +17,25 @@ def insert(collection: Collection, item):
 
 
 def find(collection: Collection, **filter):
-    return __get_collection(collection).find(filter)
+    if filter.get('id') != None:
+        filter['_id'] = ObjectId(filter['id'])
+        del filter['id']
+
+    return list(__get_collection(collection).find(filter))
 
 
 def find_one(collection: Collection, **filter):
+    if filter.get('id') != None:
+        filter['_id'] = ObjectId(filter['id'])
+        del filter['id']
+
     return __get_collection(collection).find_one(filter)
+
+
+def update(collection: Collection, item):
+    query = {'_id': item['_id']}
+    values = {'$set': item}
+    __get_collection(collection).update_one(query, values)
 
 
 def __get_collection(collection: Collection):
