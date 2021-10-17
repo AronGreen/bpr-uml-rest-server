@@ -1,5 +1,6 @@
 from src.models.workspace import Workspace
 import src.repository as db
+
 collection = db.Collection.WORKSPACE
 
 
