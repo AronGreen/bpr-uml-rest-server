@@ -1,23 +1,21 @@
-from bson.objectid import ObjectId
 from flask import Flask, render_template, request, g, abort
 from flask_cors import CORS
 
 import firebase_admin as fb_admin
 from firebase_admin import auth as fb_auth
 
-from services.log_service import log_error
-from api.users import users_api
-from api.workspace import workspace_api
-import settings
+import src.services.log_service as log
+import src.api.workspace as workspaces_api
+import src.api.users as users_api
+import src.settings as settings
 from src import repository
-import json
 from bson import json_util
 
 app = Flask(__name__)
 cors = CORS(app)
 
-app.register_blueprint(workspace_api)
-app.register_blueprint(users_api)
+app.register_blueprint(workspaces_api.api, url_prefix='/workspaces')
+app.register_blueprint(users_api.api, url_prefix='/users')
 
 settings.ensure_firebase_config()
 default_app = fb_admin.initialize_app()
@@ -25,7 +23,8 @@ default_app = fb_admin.initialize_app()
 
 @app.route("/")
 def index():
-    return render_template('./index.html',)
+    return render_template('./index.html', )
+
 
 @app.route('/mate')
 def mate():
@@ -46,28 +45,32 @@ def session_login():
 def check_auth():
     if request.path in ('/', '/mate', '/favicon.ico'):
         return
-    try: 
+    if app.debug is True:
+        g.user_email = 'debug@debug.debug'
+        g.user_id = '1234'
+        return
+    try:
         id_token = request.json['idToken']
         decoded_token = fb_auth.verify_id_token(id_token)
         g.user_email = decoded_token['email']
         g.user_id = decoded_token['user_id']
-    except (fb_auth.RevokedIdTokenError, fb_auth.CertificateFetchError, fb_auth.UserDisabledError, fb_auth.ExpiredIdTokenError) as err:
-        log_error(err, "Authentication - expired token exception")
+    except (fb_auth.RevokedIdTokenError, fb_auth.CertificateFetchError, fb_auth.UserDisabledError,
+            fb_auth.ExpiredIdTokenError) as err:
+        log.log_error(err, "Authentication - expired token exception")
         abort(401)
     except (ValueError, fb_auth.InvalidIdTokenError) as err:
-        log_error(err, "Authentication - bad token exception")
+        log.log_error(err, "Authentication - bad token exception")
         abort(400)
-  
 
 
 @app.errorhandler(400)
 def unauthorized(error):
-    return ('Bad request', 400)
+    return 'Bad request', 400
 
 
 @app.errorhandler(401)
 def unauthorized(error):
-    return ('Unauthorized', 401)
+    return 'Unauthorized', 401
 
 
 if __name__ == "__main__":

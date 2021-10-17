@@ -1,6 +1,7 @@
 from enum import Enum
 from datetime import datetime
-import mongo as db
+
+import src.repository as db
 
 
 class LogLevel(Enum):
@@ -17,7 +18,7 @@ def log_error(content, note: str):
     log(content, note, LogLevel.ERROR)
 
 
-def log_error(content, note: str):
+def log_info(content, note: str):
     log(content, note, LogLevel.INFO)
 
 
@@ -27,8 +28,8 @@ def log(content, note: str, log_level: LogLevel):
     item = {
         'timestamp': str(datetime.now()),
         'utc_timestamp': str(datetime.utcnow()),
-        'log_level' : repr(log_level),
+        'log_level': repr(log_level),
         'note': note,
-        'content':repr(content)
+        'content': repr(content)
     }
-    db.insert_one(item, db.Collection.DEBUG_LOG)
+    db.insert(db.Collection.DEBUG_LOG, item)

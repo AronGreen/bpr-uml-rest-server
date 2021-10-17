@@ -16,6 +16,7 @@ MONGO_DEFAULT_DB = os.environ['MONGO_DEFAULT_DB']
 SMTP_EMAIL_ADDRESS = os.environ['SMTP_EMAIL_ADDRESS']
 SMTP_PASSWORD = os.environ['SMTP_PASSWORD']
 
+
 def ensure_firebase_config():
     conf = {
         "type": os.environ['FB_CONF_TYPE'],

@@ -16,20 +16,20 @@ def insert(collection: Collection, item):
     return __get_collection(collection).insert_one(item)
 
 
-def find(collection: Collection, **filter):
-    if filter.get('id') != None:
-        filter['_id'] = ObjectId(filter['id'])
-        del filter['id']
+def find(collection: Collection, **kwargs):
+    if kwargs.get('id') is not None:
+        kwargs['_id'] = ObjectId(kwargs['id'])
+        del kwargs['id']
 
-    return list(__get_collection(collection).find(filter))
+    return list(__get_collection(collection).find(kwargs))
 
 
-def find_one(collection: Collection, **filter):
-    if filter.get('id') != None:
-        filter['_id'] = ObjectId(filter['id'])
-        del filter['id']
+def find_one(collection: Collection, **kwargs):
+    if kwargs.get('id') is not None:
+        kwargs['_id'] = ObjectId(kwargs['id'])
+        del kwargs['id']
 
-    return __get_collection(collection).find_one(filter)
+    return __get_collection(collection).find_one(kwargs)
 
 
 def update(collection: Collection, item):
