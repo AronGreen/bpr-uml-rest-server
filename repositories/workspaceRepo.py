@@ -8,8 +8,8 @@ def insertWorkspace(workspace: Workspace):
 
 
 def getWorkspaceName(workspaceId: str):
-    object = db.find_one_with_filter( workspaceId, { "_id": 0, "workspaceName":1 }, collection )
-    return object["workspaceName"]
+    object = db.find_one_with_filter( workspaceId, { "_id": 0, "workspace_name":1 }, collection )
+    return object["workspace_name"]
 
 
 def get_user_workspaces(user_id: str):

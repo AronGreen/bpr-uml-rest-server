@@ -49,13 +49,13 @@ def check_auth():
         g.user_email = 'debug@debug.debug'
         g.user_id = '1234'
         return
-    try:
-        id_token = request.json['idToken']
+    try: 
+        id_token = request.headers.get('accessToken')
         decoded_token = fb_auth.verify_id_token(id_token)
         g.user_email = decoded_token['email']
         g.user_id = decoded_token['user_id']
-    except (fb_auth.RevokedIdTokenError, fb_auth.CertificateFetchError, fb_auth.UserDisabledError,
-            fb_auth.ExpiredIdTokenError) as err:
+        g.user_name = decoded_token['name']
+    except (fb_auth.RevokedIdTokenError, fb_auth.CertificateFetchError, fb_auth.UserDisabledError, fb_auth.ExpiredIdTokenError) as err:
         log.log_error(err, "Authentication - expired token exception")
         abort(401)
     except (ValueError, fb_auth.InvalidIdTokenError) as err:
