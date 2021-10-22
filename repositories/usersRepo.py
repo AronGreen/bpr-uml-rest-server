@@ -12,3 +12,9 @@ def getUserByFirebaseId(user_id: str):
     if len(result) == 1:
         return result[0]
     return None
+
+def getUserByEmailAddress(email: str):
+    result = list(db.find_from_query({"email": email}, collection))
+    if len(result) == 1:
+        return result[0]
+    return None

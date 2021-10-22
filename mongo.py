@@ -9,6 +9,7 @@ class Collection(Enum):
     WORKSPACE = "workspace"
     USER = "user"
     APPLICATION_LOG = 'application_log'
+    INVITATION = 'invitation'
 
 
 def insert_one(item, collection: Collection):
@@ -35,6 +36,13 @@ def find(filter: dict, collection: Collection):
         return col.find()
     return col.find(filter)
 
+def delete_document(id:str, collection: Collection):
+    col = __get_collection(collection)
+    col.delete_one({"_id": ObjectId(id)})
+
+def update_document(condition: dict, fields_to_update: dict, collection: Collection):
+    col = __get_collection(collection)
+    col.update_one(condition, {"$set": fields_to_update})
 
 def __get_collection(collection: Collection):
     client = mongo.MongoClient(f'{settings.MONGO_PROTOCOL}://{settings.MONGO_USER}:{settings.MONGO_PW}@{settings.MONGO_HOST}/{settings.MONGO_DEFAULT_DB}?retryWrites=true&w=majority')
