@@ -3,6 +3,17 @@ import pymongo as mongo
 import settings
 from bson.objectid import ObjectId
 
+"""
+insert
+insert_many
+update
+update_many
+remove
+remove_many
+find
+
+count
+"""
 
 class Collection(Enum):
     DEBUG_LOG = "debug_log"
@@ -11,6 +22,7 @@ class Collection(Enum):
     APPLICATION_LOG = 'application_log'
     INVITATION = 'invitation'
     TEAM = 'team'
+    MATE_TEST = 'mate_test'
 
 
 def insert_one(item, collection: Collection):

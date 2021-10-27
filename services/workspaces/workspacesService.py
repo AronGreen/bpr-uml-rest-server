@@ -9,7 +9,7 @@ import util.emailValidator as emailValidator
 from flask import g
 
 
-def createWorkspace(workspace : Workspace) :
+def createWorkspace(workspace: Workspace):
     return repo.insertWorkspace(workspace)
 
 
