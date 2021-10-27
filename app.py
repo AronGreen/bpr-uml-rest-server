@@ -7,6 +7,7 @@ from firebase_admin import auth as fb_auth
 from services.log_service import log_error
 from api.users import users_api
 from api.workspace import workspace_api
+from api.teams import teams_api
 import settings
 
 app = Flask(__name__)
@@ -14,6 +15,7 @@ cors = CORS(app)
 
 app.register_blueprint(workspace_api)
 app.register_blueprint(users_api)
+app.register_blueprint(teams_api)
 
 settings.ensure_firebase_config()
 default_app = fb_admin.initialize_app()

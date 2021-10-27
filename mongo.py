@@ -10,6 +10,7 @@ class Collection(Enum):
     USER = "user"
     APPLICATION_LOG = 'application_log'
     INVITATION = 'invitation'
+    TEAM = 'team'
 
 
 def insert_one(item, collection: Collection):
