@@ -48,6 +48,7 @@ def check_auth():
     if app.debug is True:
         g.user_email = 'debug@debug.debug'
         g.user_id = '1234'
+        g.user_name = 'Mr. Debugson'
         return
     try: 
         id_token = request.headers.get('accessToken')

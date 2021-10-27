@@ -2,8 +2,8 @@ from flask import Blueprint, request, g
 import json
 
 from flask.wrappers import Response
-from models.workspace import Workspace
-import services.workspaces.workspacesService as service
+from src.models.workspace import Workspace
+import src.services.workspace_service as service
 
 api = Blueprint('workspace_api', __name__)
 
@@ -12,8 +12,10 @@ api = Blueprint('workspace_api', __name__)
 def create_workspace():
     request_data = request.get_json()
     if 'creatorId' in request_data and 'workspaceName' in request_data:
-        workspace_name = request_data['workspaceName']
-        return service.createWorkspace(Workspace(g.user_id, workspace_name))
+        return service.create_workspace(Workspace(
+            _id=None,
+            creator_id=g.user_id,
+            workspace_name=request_data['workspaceName']))
     return "Workspace name required"
 
 

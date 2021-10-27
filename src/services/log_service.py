@@ -2,6 +2,7 @@ from enum import Enum
 from datetime import datetime
 
 import src.repository as db
+from src.models.log_item import LogItem
 
 
 class LogLevel(Enum):
@@ -25,11 +26,11 @@ def log_info(content, note: str):
 def log(content, note: str, log_level: LogLevel):
     if note is None:
         note = ''
-    item = {
-        'timestamp': str(datetime.now()),
-        'utc_timestamp': str(datetime.utcnow()),
-        'log_level': repr(log_level),
-        'note': note,
-        'content': repr(content)
-    }
+    item = LogItem(
+        _id=None,
+        timestamp=str(datetime.now()),
+        utc_timestamp=str(datetime.utcnow()),
+        log_level=repr(log_level),
+        note=note,
+        content=repr(content))
     db.insert(db.Collection.DEBUG_LOG, item)
