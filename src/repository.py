@@ -1,10 +1,9 @@
-import json
 from enum import Enum
 import pymongo as mongo
 from bson.objectid import ObjectId
 from typing import Type, TypeVar
 
-import settings
+import src.settings as settings
 from src.models.mongo_document_base import MongoDocumentBase
 
 
