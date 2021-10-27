@@ -1,5 +1,5 @@
-from src.models.mongo_document_base import MongoDocumentBase
 from dataclasses import dataclass
+from src.models.mongo_document_base import MongoDocumentBase
 
 
 @dataclass

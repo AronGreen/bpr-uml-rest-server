@@ -1,3 +1,5 @@
+from bson import ObjectId
+
 from src.models.invitation import Invitation
 import src.util.email_utils as email
 import src.services.email_service as email_service
@@ -5,7 +7,7 @@ import src.services.workspace_service as workspace_service
 import src.repository as db
 from src.models.user import User
 
-userCollection = db.Collection.USER
+collection = db.Collection.USER
 
 
 def invite_user(invitation: Invitation):
@@ -17,7 +19,7 @@ def invite_user(invitation: Invitation):
 
 
 def get_user(userId):
-    return User.from_dict(db.find_one(userCollection, _id=userId))
+    return User.from_dict(db.find_one(collection, _id=userId))
 
 
 def get_user_name(userId):
@@ -25,4 +27,16 @@ def get_user_name(userId):
 
 
 def add_user(user: User):
-    return db.insert(userCollection, user)
+    return db.insert(collection, user)
+
+
+def get_teams_for_user(user_id):
+    return db.find(db.Collection.TEAM, user_id=ObjectId(user_id))
+
+
+def get_user_by_firebase_id(user_id: str):
+    return User.from_dict(db.find_one(collection, user_id=user_id))
+
+
+def get_user_by_email_address(email: str):
+    return User.from_dict(db.find_one(collection, email=email))

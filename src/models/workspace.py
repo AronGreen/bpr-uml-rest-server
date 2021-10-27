@@ -1,9 +1,10 @@
-from src.models.mongo_document_base import MongoDocumentBase
 from dataclasses import dataclass
 from bson.objectid import ObjectId
+from src.models.mongo_document_base import MongoDocumentBase
 
 
 @dataclass
 class Workspace(MongoDocumentBase):
     creator_id: ObjectId
     workspace_name: str
+    users: list

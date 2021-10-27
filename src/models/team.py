@@ -1,10 +1,11 @@
 from dataclasses import dataclass
-from bson.objectid import ObjectId
+from bson import ObjectId
+
 from src.models.mongo_document_base import MongoDocumentBase
 
 
 @dataclass
-class Invitation(MongoDocumentBase):
-    inviter_id: ObjectId
+class Team(MongoDocumentBase):
+    team_name: str
     workspace_id: ObjectId
-    invitee_email_address: str
+    users: list
