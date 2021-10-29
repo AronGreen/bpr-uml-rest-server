@@ -26,7 +26,7 @@ default_app = fb_admin.initialize_app()
 
 @app.route("/")
 def index():
-    return render_template('/src/templates/index.html', )
+    return render_template('index.html')
 
 
 @app.before_request
