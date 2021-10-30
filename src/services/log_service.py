@@ -33,4 +33,4 @@ def log(content, note: str, log_level: LogLevel):
         log_level=repr(log_level),
         note=note,
         content=repr(content))
-    db.insert(db.Collection.DEBUG_LOG, item)
+    db.insert(db.Collection.APPLICATION_LOG, item)
