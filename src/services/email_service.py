@@ -1,6 +1,6 @@
 import smtplib
 import ssl
-import src.settings as settings
+import settings as settings
 import src.services.log_service as log
 
 # TODO: move to env

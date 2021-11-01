@@ -3,7 +3,7 @@ import pymongo as mongo
 from bson.objectid import ObjectId
 from typing import Type, TypeVar
 
-import src.settings as settings
+import settings as settings
 from src.models.mongo_document_base import MongoDocumentBase
 
 
