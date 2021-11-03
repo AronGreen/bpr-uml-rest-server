@@ -1,8 +1,10 @@
 from dataclasses import dataclass, asdict, fields
+from dataclasses_json import dataclass_json, LetterCase, Undefined
 from bson.objectid import ObjectId
 import json
 
 
+@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
 class MongoDocumentBase:
     """
@@ -12,23 +14,19 @@ class MongoDocumentBase:
     """
     _id: ObjectId()
 
-    @property
-    def id(self):
-        return self._id
-
-    def to_dict(self):
+    def as_dict(self):
         return asdict(self)
 
-    def to_json(self):
+    def as_json(self):
         return json.dumps(asdict(self), default=str)
 
     @classmethod
-    def from_dict(cls, dic: dict):
+    def from_dictionary(cls, dic: dict):
         return cls(**dic)
 
     @classmethod
     def from_dict_list(cls, lst: list):
-        return [cls.from_dict(x) for x in lst]
+        return [cls.from_dictionary(x) for x in lst]
 
     @classmethod
     def from_json(cls, j: str):

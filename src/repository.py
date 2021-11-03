@@ -3,7 +3,7 @@ import pymongo as mongo
 from bson.objectid import ObjectId
 from typing import Type, TypeVar
 
-import src.settings as settings
+import settings as settings
 from src.models.mongo_document_base import MongoDocumentBase
 
 
@@ -20,9 +20,10 @@ class Collection(Enum):
 
 
 def insert(collection: Collection, item: MongoDocumentBase):
-    d = item.to_dict()
-    if item.id is None:
+    d = item.as_dict()
+    if '_id' in d and d['_id'] is None:
         del d['_id']
+
     result = __get_collection(collection).insert_one(d)
     if result.acknowledged:
         return str(result.inserted_id)
@@ -49,6 +50,10 @@ def delete(collection: Collection, **kwargs):
         kwargs['_id'] = ObjectId(kwargs['id'])
         del kwargs['id']
     __get_collection(collection).delete_one(kwargs)
+
+
+def purge(collection: Collection):
+    __get_collection(collection).delete_many({})
 
 
 def update(collection: Collection, item: MongoDocumentBase):

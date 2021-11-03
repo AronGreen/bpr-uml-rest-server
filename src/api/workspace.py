@@ -1,4 +1,4 @@
-from flask import Blueprint, request, g
+from flask import Blueprint, request, g, abort
 import json
 
 from flask.wrappers import Response
@@ -13,14 +13,14 @@ api = Blueprint('workspace_api', __name__)
 @api.route("/", methods=['POST'])
 def create_workspace():
     request_data = request.get_json()['data']
-    if 'creatorId' in request_data and 'workspaceName' in request_data:
+    if 'workspaceName' in request_data:
         return workspace_service.create_workspace(Workspace(
             _id=None,
             creator_id=g.user_id,
             workspace_name=request_data['workspaceName'],
             users=list()
         ))
-    return "Workspace name required"
+    abort(400)
 
 
 @api.route("/", methods=['GET'])

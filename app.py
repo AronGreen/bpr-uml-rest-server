@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, g, abort
 from flask_cors import CORS
 
 import src.services.log_service as log
-import src.settings as settings
+import settings as settings
 
 import src.api.project as project_api
 import src.api.teams as teams_api
@@ -26,17 +26,12 @@ default_app = fb_admin.initialize_app()
 
 @app.route("/")
 def index():
-    return render_template('/src/index.html', )
+    return render_template('index.html')
 
 
 @app.before_request
 def check_auth():
     if request.path in ('/', '/mate', '/favicon.ico'):
-        return
-    if app.debug is True:
-        g.user_email = 'debug@debug.debug'
-        g.user_id = '1234'
-        g.user_name = 'Mr. Debugson'
         return
     try: 
         id_token = request.headers['Authorization'].replace('Bearer ', '')
@@ -64,4 +59,4 @@ def unauthorized(error):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host=settings.APP_HOST, port = settings.APP_PORT, debug=False)
