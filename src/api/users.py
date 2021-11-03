@@ -1,4 +1,4 @@
-from flask import Blueprint, g
+from flask import Blueprint, g, Response
 
 import src.services.users_service as service
 from src.models.user import User
@@ -9,7 +9,7 @@ api = Blueprint('users_api', __name__)
 @api.route("/", methods=['POST'])
 def add_user():
     service.add_user(User(_id=None, user_id=g.user_id, user_name=g.user_name, email=g.user_email))
-    return '', 200
+    return Response('{}', mimetype="application/json")
 
 
 @api.route("/teams", methods=['GET'])
