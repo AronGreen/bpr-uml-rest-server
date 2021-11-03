@@ -1,6 +1,6 @@
 import firebase_admin as fb_admin
 from firebase_admin import auth as fb_auth
-from flask import Flask, render_template, request, g, abort
+from flask import Flask, render_template, request, g, abort, make_response
 from flask_cors import CORS
 
 import src.services.log_service as log
@@ -30,10 +30,18 @@ def index():
     return render_template('index.html')
 
 
+def _build_cors_preflight_response():
+    response = make_response()
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "*")
+    response.headers.add("Access-Control-Allow-Methods", "*")
+    return response
+
+
 @app.before_request
 def check_auth():
     if request.method == 'OPTIONS':
-        return
+        _build_cors_preflight_response()
     if request.path in ('/', '/mate', '/favicon.ico'):
         return
     if app.debug is True:

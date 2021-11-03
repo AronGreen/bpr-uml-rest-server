@@ -6,7 +6,7 @@ from src.models.user import User
 api = Blueprint('users_api', __name__)
 
 
-@api.route("/", methods=['POST'])
+@api.route("/", methods=['POST', 'OPTIONS'])
 def add_user():
     return service.add_user(User(_id=None, user_id=g.user_id, user_name=g.user_name, email=g.user_email))
 
