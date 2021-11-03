@@ -11,14 +11,14 @@ api = Blueprint('workspace_api', __name__)
 
 @api.route("/", methods=['POST'])
 def create_workspace():
-    request_data = request.get_json()['data']
+    request_data = request.get_json()
     if 'workspaceName' in request_data:
         return workspace_service.create_workspace(Workspace(
             _id=None,
-            creator_id=g.user_id,
-            workspace_name=request_data['workspaceName'],
+            creatorId=g.user_id,
+            workspaceName=request_data['workspaceName'],
             users=list()
-        ))
+        )).as_json()
     abort(400)
 
 

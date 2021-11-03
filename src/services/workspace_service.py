@@ -10,7 +10,8 @@ collection = db.Collection.WORKSPACE
 
 
 def create_workspace(workspace: Workspace):
-    return db.insert(collection, workspace)
+    workspace._id = str(db.insert(collection, workspace))
+    return workspace
 
 
 def get_workspace(workspace_id):

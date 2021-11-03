@@ -10,5 +10,5 @@ from src.models.mongo_document_base import MongoDocumentBase
 @dataclass
 class Workspace(MongoDocumentBase):
     creatorId: ObjectId
-    workspace_name: str
+    workspaceName: str
     users: List = field(default_factory=list)
