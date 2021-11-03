@@ -5,6 +5,6 @@ from src.models.mongo_document_base import MongoDocumentBase
 
 @dataclass
 class Workspace(MongoDocumentBase):
-    creator_id: ObjectId
+    creatorId: ObjectId
     workspace_name: str
     users: list
