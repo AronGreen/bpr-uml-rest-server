@@ -13,7 +13,7 @@ import src.api.workspace as workspace_api
 
 app = Flask(__name__)
 cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
+#app.config['CORS_HEADERS'] = 'Content-Type'
 
 
 app.register_blueprint(project_api.api, url_prefix='/projects')
@@ -54,7 +54,12 @@ def check_auth():
         decoded_token = fb_auth.verify_id_token(id_token)
         g.user_email = decoded_token['email']
         g.user_id = decoded_token['user_id']
-        g.user_name = decoded_token['name']
+        # TODO: check if this is what we want
+        # When logging in with email, name is not in the token
+        if 'name' in decoded_token:
+            g.user_name = decoded_token['name']
+        else:
+            g.user_name = decoded_token['email']
     except (fb_auth.RevokedIdTokenError, fb_auth.CertificateFetchError, fb_auth.UserDisabledError, fb_auth.ExpiredIdTokenError) as err:
         log.log_error(err, "Authentication - expired token exception")
         abort(401)

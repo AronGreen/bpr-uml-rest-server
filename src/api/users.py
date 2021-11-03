@@ -1,5 +1,4 @@
 from flask import Blueprint, request, g
-from flask_cors import  cross_origin
 
 import src.services.users_service as service
 from src.models.user import User
@@ -8,7 +7,6 @@ api = Blueprint('users_api', __name__)
 
 
 @api.route("/", methods=['POST'])
-@cross_origin()
 def add_user():
     return service.add_user(User(_id=None, user_id=g.user_id, user_name=g.user_name, email=g.user_email))
 
