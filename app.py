@@ -13,6 +13,7 @@ import src.api.workspace as workspace_api
 
 app = Flask(__name__)
 cors = CORS(app)
+#app.config['CORS_HEADERS'] = 'Content-Type'
 
 
 app.register_blueprint(project_api.api, url_prefix='/projects')
@@ -31,6 +32,8 @@ def index():
 
 @app.before_request
 def check_auth():
+    if request.method == 'OPTIONS':
+        return
     if request.path in ('/', '/mate', '/favicon.ico'):
         return
     if app.debug is True:
