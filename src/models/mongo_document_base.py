@@ -3,7 +3,6 @@ from dataclasses_json import dataclass_json, LetterCase, Undefined
 from bson.objectid import ObjectId
 import json
 
-
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
 class MongoDocumentBase:
@@ -24,6 +23,18 @@ class MongoDocumentBase:
     def from_dictionary(cls, dic: dict):
         return cls(**dic)
 
+    @classmethod
+    def as_dict_list(cls, lst: list):
+        return [ob.as_dict() for ob in lst]
+
+    @classmethod
+    def as_json_list(cls, lst: list):
+        return json.dumps(cls.as_dict_list(lst), default=str)
+        
+    @classmethod
+    def from_json_list(cls, json_list):
+        return cls.from_dict_list(json.loads(json_list))
+        
     @classmethod
     def from_dict_list(cls, lst: list):
         return [cls.from_dictionary(x) for x in lst]

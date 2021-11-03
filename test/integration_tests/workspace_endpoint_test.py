@@ -2,6 +2,7 @@ import pytest
 import requests
 import settings
 import src.repository as repo
+from src.models.workspace import Workspace
 
 created_resources = []
 base_url = "http://" + settings.APP_HOST + ":" + str(settings.APP_PORT) + "/workspaces/"
@@ -21,18 +22,35 @@ def before_test():
     yield
     for resource in created_resources:
         collection=list(resource.keys())[0]
-        repo.delete(collection, kwargs={"id": resource.get(collection)})
+        repo.delete(collection, id=resource.get(collection))
 
+@pytest.fixture
+def create_workspace_fixture():
+    request_body={ 
+        "data": {
+            "workspaceName": "text workspace"
+        }
+    }
+    response = requests.post(url = base_url, json = request_body, headers={"Authorization": token})
+    created_resources.append({repo.Collection.WORKSPACE: response.content.decode()})
+    return response.content.decode()
+
+def test_get_workspaces_for_user(create_workspace_fixture):
+    response = requests.get(url = base_url, headers={"Authorization": token})
+    assert response.status_code == 200
+    result = Workspace.from_json_list(response.content)
+    assert len(result) == 1
+    assert str(result[0]._id) == create_workspace_fixture
 
 def test_create_workspace():
     request_body={ 
         "data": {
-            "workspaceName": "test workspace"
+            "workspaceName": "new test workspace"
         }
     }
     response = requests.post(url = base_url, json = request_body, headers={"Authorization": token})
     assert response.status_code == 200
-    created_resources.append({repo.Collection.WORKSPACE: response.content})
+    created_resources.append({repo.Collection.WORKSPACE: response.content.decode()})
 
 def test_create_workspace_fail():
     request_body_with_wrong_parameter_name={ 
@@ -42,23 +60,3 @@ def test_create_workspace_fail():
     }
     response = requests.post(url = base_url, json = request_body_with_wrong_parameter_name, headers={"Authorization": token})
     assert response.status_code == 400
-
-@pytest.fixture
-def create_workspace_fixture():
-    request_body={ 
-        "data": {
-            "workspaceName": "test"
-        }
-    }
-    response = requests.post(url = base_url, json = request_body, headers={"Authorization": token})
-    created_resources.append({repo.Collection.WORKSPACE: response.content})
-    return response.content
-
-def test_get_workspaces_for_user(create_workspace_fixture):
-    response = requests.get(url = base_url, headers={"Authorization": token})
-    assert response.status_code == 200
-    assert response.content
-    assert len(create_workspace_fixture) == len(response.content)
-    print(create_workspace_fixture)
-    print(response.content)
-    assert create_workspace_fixture[0] == response.content[0]

@@ -1,5 +1,4 @@
 from flask import Blueprint, request, g, abort
-import json
 
 from flask.wrappers import Response
 
@@ -27,7 +26,7 @@ def create_workspace():
 def get_workspaces():
     user_id = g.user_id
     data = workspace_service.get_user_workspaces(user_id)
-    result = json.dumps(data, default=str)
+    result = Workspace.as_json_list(data)
     return Response(result, mimetype="application/json")
 
 

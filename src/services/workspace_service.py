@@ -25,7 +25,7 @@ def get_user_workspaces(user_id: str):
     # TODO: filter so only current users workspaces are present
 
     find_result = db.find(collection)
-    result = {'data': Workspace.from_dict_list(find_result)}
+    result = Workspace.from_dict_list(find_result)
     return result
 
 
