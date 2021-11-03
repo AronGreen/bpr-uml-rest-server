@@ -27,6 +27,7 @@ def get_user_name(userId):
 
 
 def add_user(user: User):
+    # TODO: Check if user already exists.
     return db.insert(collection, user)
 
 
