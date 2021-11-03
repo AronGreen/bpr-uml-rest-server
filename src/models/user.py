@@ -5,6 +5,6 @@ from src.models.mongo_document_base import MongoDocumentBase
 
 @dataclass
 class User(MongoDocumentBase):
-    user_name: str
+    userName: str
     email: str
-    user_id: ObjectId
+    userId: ObjectId
