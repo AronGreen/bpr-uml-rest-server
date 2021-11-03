@@ -13,7 +13,7 @@ import src.api.workspace as workspace_api
 
 app = Flask(__name__)
 cors = CORS(app)
-#app.config['CORS_HEADERS'] = 'Content-Type'
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 
 app.register_blueprint(project_api.api, url_prefix='/projects')
@@ -30,18 +30,18 @@ def index():
     return render_template('index.html')
 
 
-def _build_cors_preflight_response():
-    response = make_response()
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.headers.add("Access-Control-Allow-Headers", "*")
-    response.headers.add("Access-Control-Allow-Methods", "*")
-    return response
+# def _build_cors_preflight_response():
+#     response = make_response()
+#     response.headers.add("Access-Control-Allow-Origin", "*")
+#     response.headers.add("Access-Control-Allow-Headers", "*")
+#     response.headers.add("Access-Control-Allow-Methods", "*")
+#     return response
 
 
 @app.before_request
 def check_auth():
     if request.method == 'OPTIONS':
-        _build_cors_preflight_response()
+        return
     if request.path in ('/', '/mate', '/favicon.ico'):
         return
     if app.debug is True:
