@@ -9,6 +9,7 @@ api = Blueprint('users_api', __name__)
 @api.route("/", methods=['POST'])
 def add_user():
     service.add_user(User(_id=None, user_id=g.user_id, user_name=g.user_name, email=g.user_email))
+    return '', 200
 
 
 @api.route("/teams", methods=['GET'])
