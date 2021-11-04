@@ -20,7 +20,13 @@ def get_for_workspace(workspace_id: ObjectId) -> Project:
         return Project.from_dict_list(find_result)
 
 
-def create_project(project: Project) -> Project:
+def create_project(title: str, workspaceId: ObjectId) -> Project:
+    project = Project(
+        _id=None,
+        title=title,
+        workspaceId=workspaceId,
+        projectTeams=list(),
+        projectUsers=list())
     insert_result = db.insert(collection, project)
     if insert_result is not None:
         return Project.from_dict(insert_result)
