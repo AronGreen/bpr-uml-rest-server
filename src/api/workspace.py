@@ -1,5 +1,4 @@
-from flask import Blueprint, request, g
-import json
+from flask import Blueprint, request, g, abort
 
 from flask.wrappers import Response
 
@@ -12,22 +11,24 @@ api = Blueprint('workspace_api', __name__)
 
 @api.route("/", methods=['POST'])
 def create_workspace():
-    request_data = request.get_json()['data']
-    if 'creatorId' in request_data and 'workspaceName' in request_data:
-        return workspace_service.create_workspace(Workspace(
+    request_data = request.get_json()
+    print(request_data, flush=True)
+    if 'workspaceName' in request_data:
+        to_create = Workspace(
             _id=None,
-            creator_id=g.user_id,
-            workspace_name=request_data['workspaceName'],
-            users=list()
-        ))
-    return "Workspace name required"
+            creatorId=g.user_id,
+            workspaceName=request_data['workspaceName'],
+            users=list())
+        created = workspace_service.create_workspace(to_create)
+        return created.as_json()
+    abort(400)
 
 
 @api.route("/", methods=['GET'])
 def get_workspaces():
     user_id = g.user_id
     data = workspace_service.get_user_workspaces(user_id)
-    result = json.dumps(data, default=str)
+    result = Workspace.as_json_list(data)
     return Response(result, mimetype="application/json")
 
 
@@ -35,25 +36,25 @@ def get_workspaces():
 def invite_user():
     request_data = request.get_json()
     if 'workspaceId' in request_data and 'inviteeEmailAddress' in request_data:
-        workspace_id = request_data['workspaceId']
-        invitee_email_address = request_data['inviteeEmailAddress']
-        return workspace_service.invite_user(Invitation(
+        invitation = Invitation(
             _id=None,
-            inviter_id=g.user_id,
-            workspace_id=workspace_id,
-            invitee_email_address=invitee_email_address))
-    return "Workspace id and invitee email address are required"
+            inviterId=g.user_id,
+            workspaceId=request_data['workspaceId'],
+            inviteeEmailAddress=request_data['inviteeEmailAddress'])
+        result = workspace_service.invite_user(invitation)
+        return Response(result, mimetype="application/json")
+    return Response("Workspace id and invitee email address are required", mimetype="application/json")
 
 
-# remember to check for permissions when we get to that part
+# TODO: remember to check for permissions when we get to that part
 @api.route("/user", methods=['PATCH'])
 def remove_user_from_workspace():
     request_data = request.get_json()
     if 'workspaceId' in request_data and 'userId' in request_data:
-        workspace_id = request_data['workspaceId']
-        user_id = request_data['userId']
-        return workspace_service.remove_workspace_user(workspace_id, user_id)
-    return "Workspace id and user id"
+        return workspace_service.remove_workspace_user(
+            request_data['workspaceId'],
+            request_data['userId'])
+    return "Workspace id and/or user id missing"
 
 
 @api.route("/invitation/response", methods=['POST'])

@@ -5,7 +5,7 @@ from src.models.mongo_document_base import MongoDocumentBase
 @dataclass
 class LogItem(MongoDocumentBase):
     timestamp: str
-    utc_timestamp: str
-    log_level: str
+    utcTimestamp: str
+    logLevel: str
     note: str
     content: str

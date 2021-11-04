@@ -4,16 +4,17 @@ import src.repository as db
 collection = db.Collection.INVITATION
 
 
-def add_invitation(invitation: Invitation):
-    return str(db.insert(collection, invitation).inserted_id)
+def add_invitation(invitation: Invitation) -> Invitation:
+    insert_result = db.insert(collection, invitation)
+    if insert_result is not None:
+        return Invitation.from_dict(insert_result)
 
 
-def get_invitation(invitation_id: str):
+def get_invitation(invitation_id: str) -> Invitation:
     result = db.find_one(collection, id=invitation_id)
     if result is not None:
         return Invitation.from_dict(result)
-    return
 
 
-def delete_invitation(invitation_id: str):
-    db.delete(collection, id=id)
+def delete_invitation(invitation_id: str) -> bool:
+    return db.delete(collection, id=invitation_id)

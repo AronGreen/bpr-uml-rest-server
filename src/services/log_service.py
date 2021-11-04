@@ -11,26 +11,26 @@ class LogLevel(Enum):
     INFO = 'info'
 
 
-def log_debug(content, note: str):
+def log_debug(content, note: str) -> None:
     log(content, note, LogLevel.DEBUG)
 
 
-def log_error(content, note: str):
+def log_error(content, note: str) -> None:
     log(content, note, LogLevel.ERROR)
 
 
-def log_info(content, note: str):
+def log_info(content, note: str) -> None:
     log(content, note, LogLevel.INFO)
 
 
-def log(content, note: str, log_level: LogLevel):
+def log(content, note: str, log_level: LogLevel) -> None:
     if note is None:
         note = ''
     item = LogItem(
         _id=None,
         timestamp=str(datetime.now()),
-        utc_timestamp=str(datetime.utcnow()),
-        log_level=repr(log_level),
+        utcTimestamp=str(datetime.utcnow()),
+        logLevel=repr(log_level),
         note=note,
         content=repr(content))
     db.insert(db.Collection.APPLICATION_LOG, item)
