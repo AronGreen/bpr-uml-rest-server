@@ -1,4 +1,4 @@
-from flask import Blueprint, g, request, abort
+from flask import Blueprint, g, request, abort, Response
 
 from src.services import teams_service as service
 from src.models.team import Team
@@ -12,8 +12,12 @@ def create_team():
     request_data = request.get_json()
 
     if 'workspaceId' in request_data and 'teamName' in request_data:
-        return service.create_team(Team.from_json(request_data))
-    return "Workspace name required"
+        created = service.create_team(Team.from_json(request_data))
+        if created is not None:
+            return Response(created.as_json(), mimetype="application/json")
+        else:
+            return Response('{}', mimetype="application/json")
+    return "properties missing"
 
 
 @api.route("/users", methods=['POST'])
@@ -23,12 +27,12 @@ def add_user():
     #     'teamId': ObjectId as str,
     #     'userIds': firebaseUserId as str
     # }
-    if 'teamId' in request_data and 'userId' in request_data:
+    if 'teamId' in request_data and 'userIds' in request_data:
         team_id = request_data['teamId']
         user_ids = request_data['userIds']
         for user_id in user_ids:
             service.add_user(team_id, user_id)
-        return
+        return Response('{}', mimetype="application/json")
     abort(400)
 
 
@@ -39,10 +43,10 @@ def remove_user():
     #     'teamId': ObjectId as str,
     #     'userIds': firebaseUserId as str
     # }
-    if 'teamId' in request_data and 'userId' in request_data:
+    if 'teamId' in request_data and 'userIds' in request_data:
         team_id = request_data['teamId']
         user_ids = request_data['userIds']
         for user_id in user_ids:
             service.remove_user(team_id, user_id)
-        return
+        return Response('{}', mimetype="application/json")
     abort(400)

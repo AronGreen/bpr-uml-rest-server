@@ -12,7 +12,7 @@ context = ssl.create_default_context()
 
 
 # Try to log in to server and send email
-def send_email(receiver_email, subject, message):
+def send_email(receiver_email, subject, message) -> str:
     email = """\
 Subject: {0}
 

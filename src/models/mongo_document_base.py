@@ -1,7 +1,8 @@
 from dataclasses import dataclass, asdict, fields
-from dataclasses_json import dataclass_json, LetterCase, Undefined
 from bson.objectid import ObjectId
+from dataclasses_json import dataclass_json, LetterCase, Undefined
 import json
+
 
 @dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
@@ -12,6 +13,10 @@ class MongoDocumentBase:
     Ensures proper conversion between ObjectId and str as needed.
     """
     _id: ObjectId()
+
+    @property
+    def id(self):
+        return self._id
 
     def as_dict(self):
         return asdict(self)
@@ -30,11 +35,11 @@ class MongoDocumentBase:
     @classmethod
     def as_json_list(cls, lst: list):
         return json.dumps(cls.as_dict_list(lst), default=str)
-        
+
     @classmethod
     def from_json_list(cls, json_list):
         return cls.from_dict_list(json.loads(json_list))
-        
+
     @classmethod
     def from_dict_list(cls, lst: list):
         return [cls.from_dictionary(x) for x in lst]
@@ -43,9 +48,13 @@ class MongoDocumentBase:
     def from_json(cls, j: str):
         return cls(**json.loads(j))
 
+    def get_fields(self):
+        return fields(self)
+
     def __post_init__(self):
         for field in fields(self):
-            if type(field.type) == ObjectId:
+            if isinstance(field.type, ObjectId):
                 attr = getattr(self, field.name)
-                if type(attr) == str:
+                if attr is not None and isinstance(attr, str):
                     setattr(self, field.name, ObjectId(attr))
+

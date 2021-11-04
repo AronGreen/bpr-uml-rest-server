@@ -14,7 +14,6 @@ import src.api.workspace as workspace_api
 app = Flask(__name__)
 cors = CORS(app)
 
-
 app.register_blueprint(project_api.api, url_prefix='/projects')
 app.register_blueprint(teams_api.api, url_prefix='/teams')
 app.register_blueprint(users_api.api, url_prefix='/users')
@@ -33,13 +32,14 @@ def index():
 def check_auth():
     if request.path in ('/', '/mate', '/favicon.ico'):
         return
-    try: 
+    try:
         id_token = request.headers['Authorization'].replace('Bearer ', '')
         decoded_token = fb_auth.verify_id_token(id_token)
         g.user_email = decoded_token['email']
         g.user_id = decoded_token['user_id']
         g.user_name = decoded_token['name']
-    except (fb_auth.RevokedIdTokenError, fb_auth.CertificateFetchError, fb_auth.UserDisabledError, fb_auth.ExpiredIdTokenError) as err:
+    except (fb_auth.RevokedIdTokenError, fb_auth.CertificateFetchError, fb_auth.UserDisabledError,
+            fb_auth.ExpiredIdTokenError) as err:
         log.log_error(err, "Authentication - expired token exception")
         abort(401)
     except (ValueError, fb_auth.InvalidIdTokenError) as err:
@@ -59,4 +59,4 @@ def unauthorized(error):
 
 
 if __name__ == "__main__":
-    app.run(host=settings.APP_HOST, port = settings.APP_PORT, debug=False)
+    app.run(host=settings.APP_HOST, port=settings.APP_PORT, debug=True)
