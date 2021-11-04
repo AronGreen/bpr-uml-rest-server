@@ -32,6 +32,7 @@ def get_user_name(userId: str) -> str:
 
 
 def add_user(user: User) -> User:
+     # TODO: Check if user already exists.
     inserted = db.insert(collection, user)
     if inserted is not None:
         return User.from_dictionary(inserted)

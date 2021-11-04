@@ -12,6 +12,8 @@ def add_user():
     created = service.add_user(user)
     if created is not None:
         return Response(created.as_json(), mimetype="application/json")
+    else:
+        return Response('{}', mimetype="application/json")
 
 
 @api.route("/teams", methods=['GET'])
