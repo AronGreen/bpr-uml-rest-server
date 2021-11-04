@@ -3,19 +3,14 @@ from bson.objectid import ObjectId
 import json
 
 
+# noinspection PyArgumentList
 @dataclass
-class MongoDocumentBase:
+class SimpleMongoDocumentBase:
     """
-    Represents a base mongo document with an _id property.
+    Represents a base mongo document.
     Provides conversion methods to and from dict and json.
     Ensures proper conversion between ObjectId and str as needed.
     """
-    _id: ObjectId()
-
-    @property
-    def id(self):
-        return self._id
-
     def as_dict(self):
         return asdict(self)
 
@@ -56,3 +51,16 @@ class MongoDocumentBase:
                 if attr is not None and isinstance(attr, str):
                     setattr(self, field.name, ObjectId(attr))
 
+
+@dataclass
+class MongoDocumentBase(SimpleMongoDocumentBase):
+    """
+    Represents a base mongo document with an _id property.
+    Provides conversion methods to and from dict and json.
+    Ensures proper conversion between ObjectId and str as needed.
+    """
+    _id: ObjectId()
+
+    @property
+    def id(self):
+        return self._id

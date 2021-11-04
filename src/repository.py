@@ -16,6 +16,7 @@ class Collection(Enum):
     USER = "user"
     TEAM = 'team'
     INVITATION = 'invitation'
+    PROJECT = 'project'
     TESTING = 'testing'
 
 
@@ -48,7 +49,8 @@ def find(collection: Collection, **kwargs) -> list:
     :return: the resulting list of items as dicts
     """
     if kwargs.get('id') is not None:
-        kwargs['_id'] = ObjectId(kwargs['id'])
+        if isinstance(kwargs['id'], str):
+            kwargs['_id'] = ObjectId(kwargs['id'])
         del kwargs['id']
 
     return list(__get_collection(collection).find(kwargs))
@@ -64,7 +66,8 @@ def find_one(collection: Collection, **kwargs) -> dict:
     :return: the first item matching the query
     """
     if kwargs.get('id') is not None:
-        kwargs['_id'] = ObjectId(kwargs['id'])
+        if isinstance(kwargs['id'], str):
+            kwargs['_id'] = ObjectId(kwargs['id'])
         del kwargs['id']
 
     return __get_collection(collection).find_one(kwargs)
@@ -80,7 +83,8 @@ def delete(collection: Collection, **kwargs) -> bool:
     :return: True if an item was deleted, otherwise False
     """
     if kwargs.get('id') is not None:
-        kwargs['_id'] = ObjectId(kwargs['id'])
+        if isinstance(kwargs['id'], str):
+            kwargs['_id'] = ObjectId(kwargs['id'])
         del kwargs['id']
     delete_result = __get_collection(collection).delete_one(kwargs)
     return delete_result.deleted_count > 0
@@ -105,7 +109,7 @@ def update(collection: Collection, item: MongoDocumentBase) -> dict:
     :return: updated item
     """
     query = {'_id': item.id}
-    values = {'$set': item.to_dict()}
+    values = {'$set': item.as_dict()}
     update_result = __get_collection(collection).update_one(query, values)
     if update_result.modified_count > 0:
         return find_one(collection, _id=item.id)

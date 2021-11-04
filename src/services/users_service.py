@@ -12,11 +12,11 @@ collection = db.Collection.USER
 
 
 def invite_user(invitation: Invitation) -> str:
-    if email_utils.is_valid(invitation.invitee_email_address):
-        workspace_name = workspace_service.get_workspace_name(invitation.workspace_id)
+    if email_utils.is_valid(invitation.inviteeEmailAddress):
+        workspace_name = workspace_service.get_workspace_name(invitation.workspaceId)
         subject = "Diagramz invitation"
-        message = f"{invitation.user_name} sent you an invitation on Diagramz to collaborate on {workspace_name}"
-        return email_service.send_email(invitation.invitee_email_address, subject, message)
+        message = f"{invitation.inviterId} sent you an invitation on Diagramz to collaborate on {workspace_name}"
+        return email_service.send_email(invitation.inviteeEmailAddress, subject, message)
 
 
 def get_user(userId: str) -> User:
