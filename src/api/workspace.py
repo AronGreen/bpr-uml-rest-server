@@ -41,8 +41,9 @@ def invite_user():
             inviterId=g.user_id,
             workspaceId=request_data['workspaceId'],
             inviteeEmailAddress=request_data['inviteeEmailAddress'])
-        return workspace_service.invite_user(invitation)
-    return "Workspace id and invitee email address are required"
+        result = workspace_service.invite_user(invitation)
+        return Response(result, mimetype="application/json")
+    return Response("Workspace id and invitee email address are required", mimetype="application/json")
 
 
 # TODO: remember to check for permissions when we get to that part

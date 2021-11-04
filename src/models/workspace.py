@@ -6,7 +6,6 @@ from typing import Optional, List
 from src.models.mongo_document_base import MongoDocumentBase
 
 
-@dataclass_json(letter_case=LetterCase.CAMEL, undefined=Undefined.EXCLUDE)
 @dataclass
 class Workspace(MongoDocumentBase):
     creatorId: ObjectId

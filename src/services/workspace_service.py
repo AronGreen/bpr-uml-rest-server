@@ -14,7 +14,7 @@ collection = db.Collection.WORKSPACE
 def create_workspace(workspace: Workspace) -> Workspace:
     created_workspace = db.insert(collection, workspace)
     if created_workspace is not None:
-        return Workspace.from_dictionary(created_workspace)
+        return Workspace.from_dict(created_workspace)
 
 
 def get_workspace(workspace_id: str) -> Workspace:

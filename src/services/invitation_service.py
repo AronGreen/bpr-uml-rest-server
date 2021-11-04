@@ -7,7 +7,7 @@ collection = db.Collection.INVITATION
 def add_invitation(invitation: Invitation) -> Invitation:
     insert_result = db.insert(collection, invitation)
     if insert_result is not None:
-        return Invitation.from_dictionary(insert_result)
+        return Invitation.from_dict(insert_result)
 
 
 def get_invitation(invitation_id: str) -> Invitation:

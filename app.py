@@ -53,7 +53,7 @@ def check_auth():
         if 'name' in decoded_token:
             g.user_name = decoded_token['name']
         else:
-            g.user_name = decoded_token['email']
+            g.user_name = g.user_email
     except (fb_auth.RevokedIdTokenError, fb_auth.CertificateFetchError, fb_auth.UserDisabledError, fb_auth.ExpiredIdTokenError) as err:
         log.log_error(err, "Authentication - expired token exception")
         abort(401)

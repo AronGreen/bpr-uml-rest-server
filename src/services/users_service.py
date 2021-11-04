@@ -1,7 +1,7 @@
 from bson import ObjectId
 
 from src.models.invitation import Invitation
-import src.util.email_utils as email
+import src.util.email_utils as email_utils
 import src.services.email_service as email_service
 import src.services.workspace_service as workspace_service
 import src.repository as db
@@ -12,7 +12,7 @@ collection = db.Collection.USER
 
 
 def invite_user(invitation: Invitation) -> str:
-    if email.is_valid(invitation.invitee_email_address):
+    if email_utils.is_valid(invitation.invitee_email_address):
         workspace_name = workspace_service.get_workspace_name(invitation.workspace_id)
         subject = "Diagramz invitation"
         message = f"{invitation.user_name} sent you an invitation on Diagramz to collaborate on {workspace_name}"
@@ -35,11 +35,11 @@ def add_user(user: User) -> User:
      # TODO: Check if user already exists.
     inserted = db.insert(collection, user)
     if inserted is not None:
-        return User.from_dictionary(inserted)
+        return User.from_dict(inserted)
 
 
 def get_teams_for_user(user_id: str) -> list:
-    find_result = db.find(db.Collection.TEAM, user_id=ObjectId(user_id))
+    find_result = db.find(db.Collection.TEAM, user_id=user_id)
     if find_result is not None:
         return Team.from_dict_list(find_result)
 

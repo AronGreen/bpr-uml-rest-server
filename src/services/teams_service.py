@@ -9,7 +9,7 @@ collection = db.Collection.TEAM
 def create_team(team: Team) -> Team:
     insert_result = db.insert(collection, team)
     if insert_result is not None:
-        return Team.from_dictionary(insert_result)
+        return Team.from_dict(insert_result)
 
 
 def add_user(team_id: str, user_id: str) -> bool:
