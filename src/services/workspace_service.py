@@ -1,5 +1,5 @@
-from bson import ObjectId
-from flask import g
+from flask import g, abort
+from flask.wrappers import Response
 
 from src.models.invitation import Invitation
 from src.models.project import Project
@@ -39,47 +39,59 @@ def get_user_workspaces(user_id: str) -> list:
 
 # TODO: move to invitation service
 def invite_user(invitation: Invitation) -> str:
-    if email.is_valid(invitation.inviteeEmailAddress):
-        user = users_service.get_user_by_email_address(invitation.inviteeEmailAddress)
-        workspace = get_workspace(invitation.workspaceId.__str__())
-        if workspace is None:
-            return "Workspace does not exist"
-        if user is None:
+    workspace = get_workspace(invitation.workspaceId.__str__())
+    if workspace is None:
+        return abort(400, description="Workspace does not exist")
+
+    if invitation_service.invitation_exists(invitation.workspaceId, invitation.inviteeEmailAddress): 
+        abort(400, description="User already invited")
+            
+    user = users_service.get_user_by_email_address(invitation.inviteeEmailAddress)
+    if user is None:
+        if email.is_valid(invitation.inviteeEmailAddress):
             subject = "Diagramz invitation"
-            message = "{} sent you an invitation on Diagramz to collaborate on {}".format(g.user_name,
-                                                                                          workspace.name)
+            message = "{} sent you an invitation on Diagramz to collaborate on {}".format(g.user_name, workspace.name)
             email_service.send_email(invitation.inviteeEmailAddress, subject, message)
-        invitation_service.add_invitation(invitation)
-        return "Invitation sent"
-    return "Invalid email"
+            invitation_service.add_invitation(invitation)
+            return "User invited"
+        else: 
+            abort(400, description="Invalid email")
+    else:
+        if not isUserInWorkspace(invitation.workspaceId, user.firebaseId):
+            invitation_service.add_invitation(invitation)
+            return "User invited"
+        else:
+            abort(400, description="User already in workspace")
 
 
 # TODO: move to invitation service
 def respond_to_invitation(invitation_id, accepted) -> str:
+    invitation = invitation_service.get_invitation(invitation_id)
+    if(g.user_email != invitation.inviteeEmailAddress):
+        abort(401)
+    if invitation is None:
+        abort(404, description="Invitation not found")
     return_text = ""
     if accepted:
-        invitation = invitation_service.get_invitation(invitation_id)
-        if invitation is not None:
-            user = users_service.get_user_by_email_address(invitation.inviteeEmailAddress)
-            workspace = get_workspace(invitation.workspaceId.__str__())
-            if user is not None and workspace is not None:
-                add_workspace_user(invitation.workspaceId, user.id)
-                return_text = "User added"
-        else:
-            return_text = "Invitation not found"
+        user = users_service.get_user_by_email_address(invitation.inviteeEmailAddress)
+        workspace = get_workspace(invitation.workspaceId.__str__())
+        if user is not None and workspace is not None:
+            add_workspace_user(invitation.workspaceId, user.firebaseId)
+            return_text = "User added"
     else:
         return_text = "Invitation declined"
     invitation_service.delete_invitation(invitation_id)
     return return_text
 
-
 def add_workspace_user(workspace_id, user_id) -> bool:
-    return db.push(
-        collection=db.Collection.WORKSPACE,
-        document_id=workspace_id,
-        field_name='users',
-        item=user_id
-    )
+    if not isUserInWorkspace(workspace_id, user_id):
+        return db.push(
+            collection=db.Collection.WORKSPACE,
+            document_id=workspace_id,
+            field_name='users',
+            item=user_id
+        )
+    return
 
 
 def remove_workspace_user(workspace_id, user_id) -> bool:
@@ -96,5 +108,13 @@ def get_workspace_users(workspaceId: str) -> list:
     if workspace['users'] is None:
         return list()
     return User.from_dict_list(workspace['users'])
+
+def isUserInWorkspace(workspace_id: str, firebase_id: str):
+    workspace = db.find_one(collection, id=workspace_id)
+    if workspace is not None:
+        workspace = Workspace.from_dict(workspace)
+    if firebase_id in workspace.users:
+        return True
+    return False
 
 

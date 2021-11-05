@@ -18,3 +18,6 @@ def get_invitation(invitation_id: str) -> Invitation:
 
 def delete_invitation(invitation_id: str) -> bool:
     return db.delete(collection, id=invitation_id)
+
+def invitation_exists(workspace_id: str, invitee_email_address: str):
+    return db.find_one(collection=collection, workspaceId=workspace_id, inviteeEmailAddress=invitee_email_address)

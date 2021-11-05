@@ -2,7 +2,7 @@ import json
 
 import firebase_admin as fb_admin
 from firebase_admin import auth as fb_auth
-from flask import Flask, render_template, request, g, abort, make_response
+from flask import Flask, render_template, request, g, abort
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 

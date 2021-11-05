@@ -127,7 +127,7 @@ def push(collection: Collection, document_id: ObjectId, field_name: str, item) -
 
     # NOTE: Consider changing $push to $addToSet to avoid dupes in list
     update_result = __get_collection(collection).update_one(
-        {'_id': document_id},
+        {'_id': ObjectId(document_id)},
         {'$push': {field_name: item}}
     )
     return update_result.modified_count > 0
@@ -143,7 +143,7 @@ def pull(collection: Collection, document_id: ObjectId, field_name: str, item) -
     :return: True if a document was modified
     """
     update_result = __get_collection(collection).update_one(
-        {'_id': document_id},
+        {'_id': ObjectId(document_id)},
         {'$pull': {field_name: item}}
     )
     return update_result.modified_count > 0
