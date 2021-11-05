@@ -14,6 +14,7 @@ class Collection(Enum):
     INVITATION = 'invitation'
     PROJECT = 'project'
     TESTING = 'testing'
+    DIAGRAM = 'diagram'
 
 
 def insert(collection: Collection, item: MongoDocumentBase) -> dict:

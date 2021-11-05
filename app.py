@@ -9,19 +9,21 @@ from werkzeug.exceptions import HTTPException
 import src.services.log_service as log
 import settings as settings
 
-import src.api.project as project_api
-import src.api.teams as teams_api
-import src.api.users as users_api
-import src.api.workspace as workspace_api
+from src.api import \
+    project as project_api, \
+    teams as teams_api, \
+    users as users_api, \
+    workspace as workspace_api, \
+    diagrams as diagram_api
 
 app = Flask(__name__)
 cors = CORS(app)
-#app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.register_blueprint(project_api.api, url_prefix='/projects')
 app.register_blueprint(teams_api.api, url_prefix='/teams')
 app.register_blueprint(users_api.api, url_prefix='/users')
 app.register_blueprint(workspace_api.api, url_prefix='/workspaces')
+app.register_blueprint(diagram_api.api, url_prefix='/diagrams')
 
 settings.ensure_firebase_config()
 default_app = fb_admin.initialize_app()
@@ -30,14 +32,6 @@ default_app = fb_admin.initialize_app()
 @app.route("/")
 def index():
     return render_template('index.html')
-
-
-# def _build_cors_preflight_response():
-#     response = make_response()
-#     response.headers.add("Access-Control-Allow-Origin", "*")
-#     response.headers.add("Access-Control-Allow-Headers", "*")
-#     response.headers.add("Access-Control-Allow-Methods", "*")
-#     return response
 
 
 @app.before_request
@@ -57,7 +51,8 @@ def check_auth():
             g.user_name = decoded_token['name']
         else:
             g.user_name = g.user_email
-    except (fb_auth.RevokedIdTokenError, fb_auth.CertificateFetchError, fb_auth.UserDisabledError, fb_auth.ExpiredIdTokenError) as err:
+    except (fb_auth.RevokedIdTokenError, fb_auth.CertificateFetchError, fb_auth.UserDisabledError,
+            fb_auth.ExpiredIdTokenError) as err:
         log.log_error(err, "Authentication - expired token exception")
         abort(401)
     except (ValueError, fb_auth.InvalidIdTokenError) as err:
