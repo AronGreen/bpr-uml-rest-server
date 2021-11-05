@@ -17,7 +17,7 @@ def create_workspace():
     if 'workspaceName' in request_data:
         to_create = Workspace(
             _id=None,
-            creatorId=g.user_id,
+            creatorId=g.firebase_id,
             name=request_data['workspaceName'],
             users=list())
         created = workspace_service.create_workspace(to_create)
@@ -27,7 +27,7 @@ def create_workspace():
 
 @api.route("/", methods=['GET'])
 def get_workspaces():
-    user_id = g.user_id
+    user_id = g.firebase_id
     data = workspace_service.get_user_workspaces(user_id)
     result = Workspace.as_json_list(data)
     return Response(result, mimetype="application/json")
@@ -47,7 +47,7 @@ def get_workspace_users(workspaceId: str):
 
 @api.route("/<workspaceId>/projects", methods=['GET'])
 def get_workspace_user_projects(workspaceId: str):
-    user_id = users_service.get_user_by_firebase_id(g.user_id).id
+    user_id = users_service.get_user_by_firebase_id(g.firebase_id).id
     result = project_service.get_user_projects(workspaceId, user_id)
     return Response(User.as_json_list(result), mimetype="application/json")
 
@@ -58,7 +58,7 @@ def invite_user():
     if 'workspaceId' in request_data and 'inviteeEmailAddress' in request_data:
         invitation = Invitation(
             _id=None,
-            inviterId=g.user_id,
+            inviterId=g.firebase_id,
             workspaceId=request_data['workspaceId'],
             inviteeEmailAddress=request_data['inviteeEmailAddress'])
         result = workspace_service.invite_user(invitation)

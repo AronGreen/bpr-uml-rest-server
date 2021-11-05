@@ -44,7 +44,7 @@ def check_auth():
         id_token = request.headers['Authorization'].replace('Bearer ', '')
         decoded_token = fb_auth.verify_id_token(id_token)
         g.user_email = decoded_token['email']
-        g.user_id = decoded_token['user_id']
+        g.firebase_id = decoded_token['user_id']
         # TODO: check if this is what we want
         # When logging in with email, name is not in the token
         if 'name' in decoded_token:

@@ -11,7 +11,7 @@ def add_user():
     try:
         user = User(
             _id=None,
-            firebaseId=g.user_id,
+            firebaseId=g.firebase_id,
             name=g.user_name,
             email=g.user_email)
         created = users_service.add_user(user)
@@ -25,5 +25,5 @@ def add_user():
 
 @api.route("/teams", methods=['GET'])
 def get_team_for_user():
-    find_result = users_service.get_teams_for_user(g.user_id)
+    find_result = users_service.get_teams_for_user(g.firebase_id)
     return Response(User.as_json_list(find_result), mimetype="application/json")
