@@ -9,14 +9,17 @@ api = Blueprint('users_api', __name__)
 @api.route("/", methods=['POST'])
 def add_user():
     try:
-        user = User(
+        user = users_service.get_user_by_firebase_id(g.firebase_id)
+        if user is not None:
+            return Response(user.as_json(), mimetype="application/json")
+
+        user = users_service.add_user(User(
             _id=None,
             firebaseId=g.firebase_id,
             name=g.user_name,
-            email=g.user_email)
-        created = users_service.add_user(user)
-        if created is not None:
-            return Response(created.as_json(), mimetype="application/json")
+            email=g.user_email))
+        if user is not None:
+            return Response(user.as_json(), mimetype="application/json")
         else:
             return Response('{}', mimetype="application/json")
     except KeyError:
