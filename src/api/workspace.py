@@ -5,7 +5,7 @@ from flask.wrappers import Response
 from src.models.invitation import Invitation
 from src.models.user import User
 from src.models.workspace import Workspace
-import src.services.workspace_service as workspace_service
+from src.services import workspace_service, users_service, project_service
 
 api = Blueprint('workspace_api', __name__)
 
@@ -42,6 +42,13 @@ def get_workspace(workspaceId: str):
 @api.route("/<workspaceId>/users", methods=['GET'])
 def get_workspace_users(workspaceId: str):
     result = workspace_service.get_workspace_users(workspaceId)
+    return Response(User.as_json_list(result), mimetype="application/json")
+
+
+@api.route("/<workspaceId>/projects", methods=['GET'])
+def get_workspace_user_projects(workspaceId: str):
+    user_id = users_service.get_user_by_firebase_id(g.user_id).id
+    result = project_service.get_user_projects(workspaceId, user_id)
     return Response(User.as_json_list(result), mimetype="application/json")
 
 

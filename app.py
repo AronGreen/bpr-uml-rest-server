@@ -1,7 +1,10 @@
+import json
+
 import firebase_admin as fb_admin
 from firebase_admin import auth as fb_auth
 from flask import Flask, render_template, request, g, abort, make_response
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
 
 import src.services.log_service as log
 import settings as settings
@@ -62,10 +65,19 @@ def check_auth():
         abort(400)
 
 
-# TODO: add more errorhandlers
-@app.errorhandler(400)
-def unauthorized(error):
-    return 'Bad request', 400
+@app.errorhandler(HTTPException)
+def handle_exception(e):
+    """Return JSON instead of HTML for HTTP errors."""
+    # start with the correct headers and status code from the error
+    response = e.get_response()
+    # replace the body with JSON
+    response.data = json.dumps({
+        "code": e.code,
+        "name": e.name,
+        "description": e.description,
+    })
+    response.content_type = "application/json"
+    return response
 
 
 @app.errorhandler(401)

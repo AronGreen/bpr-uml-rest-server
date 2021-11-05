@@ -1,13 +1,9 @@
 from enum import Enum
 import pymongo as mongo
 from bson.objectid import ObjectId
-from typing import Type, TypeVar
 
 import settings as settings
-from src.models.mongo_document_base import MongoDocumentBase
-
-
-# TDocument = TypeVar("TDocument", bound=MongoDocumentBase)
+from src.models.mongo_document_base import MongoDocumentBase, SimpleMongoDocumentBase
 
 
 class Collection(Enum):
@@ -118,12 +114,17 @@ def update(collection: Collection, item: MongoDocumentBase) -> dict:
 def push(collection: Collection, document_id: ObjectId, field_name: str, item) -> bool:
     """
     Inserts an item into a list on a document.
+    :rtype: object
     :param collection: collection to query
     :param document_id:document id
     :param field_name: list field on document
     :param item: Document to modify
     :return:  True if a document was modified
     """
+    if isinstance(item, SimpleMongoDocumentBase) or isinstance(item, MongoDocumentBase):
+        item = item.as_dict()
+
+    # NOTE: Consider changing $push to $addToSet to avoid dupes in list
     update_result = __get_collection(collection).update_one(
         {'_id': document_id},
         {'$push': {field_name: item}}

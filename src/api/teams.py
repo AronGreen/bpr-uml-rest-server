@@ -21,12 +21,8 @@ def create_team():
 
 
 @api.route("/users", methods=['POST'])
-def add_user():
+def add_users():
     request_data = request.get_json()
-    # {
-    #     'teamId': ObjectId as str,
-    #     'userIds': firebaseUserId as str
-    # }
     if 'teamId' in request_data and 'userIds' in request_data:
         team_id = request_data['teamId']
         user_ids = request_data['userIds']
@@ -39,10 +35,6 @@ def add_user():
 @api.route("/users", methods=['DELETE'])
 def remove_user():
     request_data = request.get_json()
-    # {
-    #     'teamId': ObjectId as str,
-    #     'userIds': firebaseUserId as str
-    # }
     if 'teamId' in request_data and 'userIds' in request_data:
         team_id = request_data['teamId']
         user_ids = request_data['userIds']
