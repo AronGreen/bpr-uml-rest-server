@@ -19,7 +19,7 @@ def create_workspace():
             _id=None,
             creatorId=g.firebase_id,
             name=request_data['name'],
-            users=list())
+            users=[g.firebase_id])
         created = workspace_service.create_workspace(to_create)
         return Response(created.as_json(), mimetype="application/json")
     abort(400, description="Workspace name needed")

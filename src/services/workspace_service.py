@@ -32,7 +32,7 @@ def get_workspace_name(workspace_id) -> str:
 
 def get_user_workspaces(user_id: str) -> list:
     # TODO: filter so only current users workspaces are present
-    find_result = db.find(collection)
+    find_result = db.find(collection, users=user_id)
     if find_result is not None:
         return Workspace.from_dict_list(find_result)
 
@@ -43,7 +43,7 @@ def invite_user(invitation: Invitation) -> str:
     if workspace is None:
         return abort(400, description="Workspace does not exist")
 
-    if invitation_service.invitation_exists(invitation.workspaceId, invitation.inviteeEmailAddress): 
+    if invitation_service.get_invitation(invitation.workspaceId, invitation.inviteeEmailAddress): 
         abort(400, description="User already invited")
             
     user = users_service.get_user_by_email_address(invitation.inviteeEmailAddress)
@@ -66,7 +66,7 @@ def invite_user(invitation: Invitation) -> str:
 
 # TODO: move to invitation service
 def respond_to_invitation(invitation_id, accepted) -> str:
-    invitation = invitation_service.get_invitation(invitation_id)
+    invitation = invitation_service.get_invitation_by_id(invitation_id)
     if(g.user_email != invitation.inviteeEmailAddress):
         abort(401)
     if invitation is None:

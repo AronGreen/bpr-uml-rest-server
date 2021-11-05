@@ -11,7 +11,7 @@ def add_user():
     try:
         user = users_service.get_user_by_firebase_id(g.firebase_id)
         if user is not None:
-            return Response(user.as_json(), mimetype="application/json")
+            abort(400, description="User already exists")
 
         user = users_service.add_user(User(
             _id=None,
