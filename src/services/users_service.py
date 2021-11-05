@@ -39,13 +39,13 @@ def add_user(user: User) -> User:
 
 
 def get_teams_for_user(user_id: str) -> list:
-    find_result = db.find(db.Collection.TEAM, user_id=user_id)
+    find_result = db.find(db.Collection.TEAM, userId=user_id)
     if find_result is not None:
         return Team.from_dict_list(find_result)
 
 
 def get_user_by_firebase_id(user_id: str) -> User:
-    find_result = db.find_one(collection, user_id=user_id)
+    find_result = db.find_one(collection, userId=user_id)
     if find_result is not None:
         return User.from_dict(find_result)
 

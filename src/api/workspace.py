@@ -3,8 +3,9 @@ from flask import Blueprint, request, g, abort
 from flask.wrappers import Response
 
 from src.models.invitation import Invitation
+from src.models.user import User
 from src.models.workspace import Workspace
-import src.services.workspace_service as workspace_service
+from src.services import workspace_service, users_service, project_service
 
 api = Blueprint('workspace_api', __name__)
 
@@ -17,7 +18,7 @@ def create_workspace():
         to_create = Workspace(
             _id=None,
             creatorId=g.user_id,
-            workspaceName=request_data['workspaceName'],
+            name=request_data['workspaceName'],
             users=list())
         created = workspace_service.create_workspace(to_create)
         return created.as_json()
@@ -30,6 +31,25 @@ def get_workspaces():
     data = workspace_service.get_user_workspaces(user_id)
     result = Workspace.as_json_list(data)
     return Response(result, mimetype="application/json")
+
+
+@api.route("/<workspaceId>", methods=['GET'])
+def get_workspace(workspaceId: str):
+    result = workspace_service.get_workspace(workspaceId)
+    return Response(result.as_json(), mimetype="application/json")
+
+
+@api.route("/<workspaceId>/users", methods=['GET'])
+def get_workspace_users(workspaceId: str):
+    result = workspace_service.get_workspace_users(workspaceId)
+    return Response(User.as_json_list(result), mimetype="application/json")
+
+
+@api.route("/<workspaceId>/projects", methods=['GET'])
+def get_workspace_user_projects(workspaceId: str):
+    user_id = users_service.get_user_by_firebase_id(g.user_id).id
+    result = project_service.get_user_projects(workspaceId, user_id)
+    return Response(User.as_json_list(result), mimetype="application/json")
 
 
 @api.route("/invitation", methods=['POST'])
@@ -65,3 +85,4 @@ def respond_to_invitation():
         accepted = request_data['accepted']
         return workspace_service.respond_to_invitation(invitation_id, accepted)
     return "Workspace id and user id"
+

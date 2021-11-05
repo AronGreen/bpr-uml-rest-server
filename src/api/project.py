@@ -1,7 +1,6 @@
 from flask import Blueprint, g, request, abort, Response
 
 from src.services import project_service
-from src.models.project import Project
 
 api = Blueprint('projects_api', __name__)
 
@@ -11,12 +10,24 @@ api = Blueprint('projects_api', __name__)
 def create_project():
     request_data = request.get_json()
     try:
-        if '_id' not in request_data:
-            request_data['_id'] = None
-        project = Project.from_dict(request_data)
-        create_result = project_service.create_project(project)
+        create_result = project_service.create_project(
+            title=request_data['title'],
+            workspaceId=request_data['workspaceId'])
         if create_result is not None:
             return Response(create_result.as_json(), mimetype="application/json")
-    except Exception as err:
-        abort(403, err.__repr__())
+    except KeyError:
+        abort(400, "Insufficient data in request")
+
+
+@api.route("/<projectId>/user", methods=['POST'])
+def add_user(projectId: str):
+    request_data = request.get_json()
+    try:
+        result = project_service.add_user(
+            project_id=projectId,
+            user_id=request_data['userId'],
+            is_editor=request_data['isEditor'])
+        return Response({'success': result}, mimetype="application/json")
+    except KeyError:
+        abort(400, "Insufficient data in request body")
 

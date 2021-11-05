@@ -1,6 +1,9 @@
+from bson import ObjectId
 from flask import g
 
 from src.models.invitation import Invitation
+from src.models.project import Project
+from src.models.user import User
 from src.models.workspace import Workspace
 import src.repository as db
 import src.util.email_utils as email
@@ -44,7 +47,7 @@ def invite_user(invitation: Invitation) -> str:
         if user is None:
             subject = "Diagramz invitation"
             message = "{} sent you an invitation on Diagramz to collaborate on {}".format(g.user_name,
-                                                                                          workspace.workspaceName)
+                                                                                          workspace.name)
             email_service.send_email(invitation.inviteeEmailAddress, subject, message)
         invitation_service.add_invitation(invitation)
         return "Invitation sent"
@@ -60,8 +63,7 @@ def respond_to_invitation(invitation_id, accepted) -> str:
             user = users_service.get_user_by_email_address(invitation.inviteeEmailAddress)
             workspace = get_workspace(invitation.workspaceId.__str__())
             if user is not None and workspace is not None:
-                workspace.add_user(user["user_id"])
-                add_workspace_user(invitation.workspaceId, user.user_id)
+                add_workspace_user(invitation.workspaceId, user.id)
                 return_text = "User added"
         else:
             return_text = "Invitation not found"
@@ -87,3 +89,12 @@ def remove_workspace_user(workspace_id, user_id) -> bool:
         field_name='users',
         item=user_id
     )
+
+
+def get_workspace_users(workspaceId: str) -> list:
+    workspace = db.find_one(collection, id=workspaceId)
+    if workspace['users'] is None:
+        return list()
+    return User.from_dict_list(workspace['users'])
+
+
