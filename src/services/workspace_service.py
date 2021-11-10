@@ -51,8 +51,8 @@ def invite_user(invitation: Invitation) -> str:
 
     if invitation_service.get_invitation(invitation.workspaceId, invitation.inviteeEmailAddress):
         abort(400, description="User already invited")
-    inviter = db.find_one(db.Collection.USER, firebaseId=g.firebase_id)
-    invitation.inviterId = inviter['_id']
+    inviter = users_service.get_user_by_firebase_id(g.firebase_id)
+    invitation.inviterId = inviter.id
     user = users_service.get_user_by_email_address(invitation.inviteeEmailAddress)
     if user is None:
         if email.is_valid(invitation.inviteeEmailAddress):
@@ -64,7 +64,7 @@ def invite_user(invitation: Invitation) -> str:
         else:
             abort(400, description="Invalid email")
     else:
-        if not is_user_in_workspace(invitation.workspaceId, user.id):
+        if user.id not in workspace.users:
             invitation_service.add_invitation(invitation)
             return "User invited"
         else:
@@ -120,7 +120,10 @@ def get_workspace_users(workspaceId: str | ObjectId) -> list:
 def is_user_in_workspace(workspace_id: ObjectId, user_id: ObjectId):
     workspace = db.find_one(collection, id=workspace_id)
     if workspace is not None:
+        print(workspace)
+        print(user_id)
         workspace = Workspace.from_dict(workspace)
+        print(user_id in workspace.users)
     if user_id in workspace.users:
         return True
     return False
