@@ -1,3 +1,4 @@
+from bson import ObjectId
 from flask import Blueprint, request, g, abort
 
 from flask.wrappers import Response
@@ -17,9 +18,8 @@ def create_workspace():
     if 'name' in request_data:
         to_create = Workspace(
             _id=None,
-            creatorId=g.firebase_id,
             name=request_data['name'],
-            users=[g.firebase_id])
+            users=list())
         created = workspace_service.create_workspace(to_create)
         return Response(created.as_json(), mimetype="application/json")
     abort(400, description="Workspace name needed")
@@ -27,8 +27,8 @@ def create_workspace():
 
 @api.route("", methods=['GET'])
 def get_workspaces():
-    user_id = g.firebase_id
-    data = workspace_service.get_user_workspaces(user_id)
+    firebase_id = g.firebase_id
+    data = workspace_service.get_user_workspaces(firebase_id)
     result = Workspace.as_json_list(data)
     return Response(result, mimetype="application/json")
 
@@ -59,7 +59,7 @@ def invite_user():
         invitation = Invitation(
             _id=None,
             inviterId=g.firebase_id,
-            workspaceId=request_data['workspaceId'],
+            workspaceId=ObjectId(request_data['workspaceId']),
             inviteeEmailAddress=request_data['inviteeEmailAddress'])
         result = workspace_service.invite_user(invitation)
         return Response(status=200, response=result, mimetype="application/json")

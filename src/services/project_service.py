@@ -42,7 +42,7 @@ def delete_project(project_id: str | ObjectId) -> bool:
     return db.delete(collection, id=project_id)
 
 
-def add_user(project_id: str, user_id: str, is_editor: bool):
+def add_user(project_id: str, user_id: str, is_editor: bool) -> bool:
     user = ProjectUser(userId=ObjectId(user_id), isEditor=is_editor)
     return db.push(collection=collection, document_id=ObjectId(project_id), field_name='users', item=user)
 

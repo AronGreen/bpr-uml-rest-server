@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from bson import ObjectId
+
 from src.models.invitation import Invitation
 import src.repository as db
 
@@ -19,7 +23,10 @@ def get_invitation_by_id(invitation_id: str) -> Invitation:
 def delete_invitation(invitation_id: str) -> bool:
     return db.delete(collection, id=invitation_id)
 
-def get_invitation(workspace_id: str, invitee_email_address: str) -> Invitation:
-    invitation = db.find_one(collection=collection, workspaceId=workspace_id, inviteeEmailAddress=invitee_email_address)
+
+def get_invitation(workspace_id: ObjectId, invitee_email_address: str) -> Invitation:
+    invitation = db.find_one(collection=collection,
+                             workspaceId=workspace_id,
+                             inviteeEmailAddress=invitee_email_address)
     if invitation is not None:
         return Invitation.from_dict(invitation)

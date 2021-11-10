@@ -7,4 +7,4 @@ from src.models.mongo_document_base import MongoDocumentBase
 class User(MongoDocumentBase):
     name: str
     email: str
-    firebaseId: str  # firebase id
+    firebaseId: str
