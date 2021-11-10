@@ -10,7 +10,7 @@ import json
 
 created_resources = []
 port_no = str(settings.APP_PORT)
-#port_no = str(5000)
+port_no = str(5000)
 base_url = "http://" + settings.APP_HOST + ":" + port_no + "/"
 
 
@@ -26,30 +26,20 @@ def create_workspace_fixture() -> Workspace:
     request_body = {
         "name": "test workspace"
     }
-    response = requests.post(url=base_url + "workspaces/", json=request_body, headers={"Authorization": token})
+    response = requests.post(url=base_url + "workspaces", json=request_body, headers={"Authorization": token})
     workspace = Workspace.from_json(response.content.decode())
     created_resources.append({repo.Collection.WORKSPACE: workspace._id})
     return workspace
 
 @pytest.fixture
 def create_user() -> User:
-    response = requests.post(url=base_url + "users/", headers={"Authorization": token})
+    response = requests.post(url=base_url + "users", headers={"Authorization": token})
     result = User.from_json(response.content.decode())
     created_resources.append({repo.Collection.USER: result._id})
     return result
 
-
-def test_create_workspace():
-    request_body = {
-        "name": "new test workspace"
-    }
-    response = requests.post(url=base_url + "workspaces/", json=request_body, headers={"Authorization": token})
-    assert response.status_code == 200
-    created_resources.append({repo.Collection.WORKSPACE: Workspace.from_json(response.content.decode())._id})
-
-
 def test_get_workspaces_for_user(create_workspace_fixture):
-    response = requests.get(url=base_url + "workspaces/", headers={"Authorization": token})
+    response = requests.get(url=base_url + "workspaces", headers={"Authorization": token})
     assert response.status_code == 200
     result = Workspace.from_json_list(response.content.decode())
     print(result)
@@ -57,11 +47,19 @@ def test_get_workspaces_for_user(create_workspace_fixture):
     assert str(result[0]._id) == str(create_workspace_fixture._id)
     assert str(result[0].name) == create_workspace_fixture.name
 
+def test_create_workspace():
+    request_body = {
+        "name": "new test workspace"
+    }
+    response = requests.post(url=base_url + "workspaces", json=request_body, headers={"Authorization": token})
+    assert response.status_code == 200
+    created_resources.append({repo.Collection.WORKSPACE: Workspace.from_json(response.content.decode())._id})
+
 def test_create_workspace_fail():
     request_body_with_wrong_parameter_name = {
         "workspace": "test workspace"
     }
-    response = requests.post(url=base_url + "workspaces/", json=request_body_with_wrong_parameter_name,
+    response = requests.post(url=base_url + "workspaces", json=request_body_with_wrong_parameter_name,
                              headers={"Authorization": token})
     assert response.status_code == 400
 

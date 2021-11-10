@@ -1,4 +1,4 @@
-from flask import Blueprint, request, g, Response, abort
+from flask import Blueprint, g, Response, abort
 
 from src.services import users_service
 from src.models.user import User
@@ -6,7 +6,7 @@ from src.models.user import User
 api = Blueprint('users_api', __name__)
 
 
-@api.route("/", methods=['POST'])
+@api.route("", methods=['POST'])
 def add_user():
     try:
         user = users_service.get_user_by_firebase_id(g.firebase_id)

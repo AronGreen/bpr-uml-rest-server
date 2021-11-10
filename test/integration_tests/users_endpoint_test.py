@@ -8,7 +8,7 @@ import src.repository as repo
 created_resources = []
 port_no = str(settings.APP_PORT)
 port_no = str(5000)
-base_url = "http://" + settings.APP_HOST + ":" + port_no + "/users/"
+base_url = "http://" + settings.APP_HOST + ":" + port_no + "/users"
 
 @pytest.fixture(autouse=True)
 def before_test():

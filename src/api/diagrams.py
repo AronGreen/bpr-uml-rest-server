@@ -6,7 +6,7 @@ api = Blueprint('diagrams_api', __name__)
 
 
 # TODO: when adding roles: make sure that the creator has access and permissions to add team to the workspace
-@api.route("/", methods=['POST'])
+@api.route("", methods=['POST'])
 def create_diagram():
     request_data = request.get_json()
     try:

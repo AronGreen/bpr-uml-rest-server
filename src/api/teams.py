@@ -7,7 +7,7 @@ api = Blueprint('teams_api', __name__)
 
 
 # when adding roles: make sure that the creator has access and permissions to add team to the workspace
-@api.route("/", methods=['POST'])
+@api.route("", methods=['POST'])
 def create_team():
     request_data = request.get_json()
     if 'workspaceId' in request_data and 'teamName' in request_data:

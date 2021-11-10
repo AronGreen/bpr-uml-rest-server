@@ -10,7 +10,7 @@ from src.services import workspace_service, users_service, project_service
 api = Blueprint('workspace_api', __name__)
 
 
-@api.route("/", methods=['POST'])
+@api.route("", methods=['POST'])
 def create_workspace():
     request_data = request.get_json()
     print(request_data, flush=True)
@@ -25,7 +25,7 @@ def create_workspace():
     abort(400, description="Workspace name needed")
 
 
-@api.route("/", methods=['GET'])
+@api.route("", methods=['GET'])
 def get_workspaces():
     user_id = g.firebase_id
     data = workspace_service.get_user_workspaces(user_id)
