@@ -12,7 +12,8 @@ def create_project():
     try:
         create_result = project_service.create_project(
             title=request_data['title'],
-            workspaceId=request_data['workspaceId'])
+            workspaceId=request_data['workspaceId'],
+            creator_firebase_id=g.firebase_id)
         if create_result is not None:
             return Response(create_result.as_json(), mimetype="application/json")
     except KeyError:

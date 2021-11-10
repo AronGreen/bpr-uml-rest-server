@@ -44,8 +44,8 @@ def get_teams_for_user(user_id: str) -> list:
         return Team.from_dict_list(find_result)
 
 
-def get_user_by_firebase_id(user_id: str) -> User:
-    find_result = db.find_one(collection, firebaseId=user_id)
+def get_user_by_firebase_id(firebase_id: str) -> User:
+    find_result = db.find_one(collection, firebaseId=firebase_id)
     if find_result is not None:
         return User.from_dict(find_result)
 

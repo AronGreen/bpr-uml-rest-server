@@ -1,9 +1,12 @@
 from __future__ import annotations
+from flask import abort
 
 from bson import ObjectId
 
 import src.repository as db
 from src.models.project import Project, ProjectUser
+import src.services.workspace_service as workspace_service
+import src.services.users_service as users_service
 
 collection = db.Collection.PROJECT
 
@@ -20,13 +23,17 @@ def get_for_workspace(workspace_id: ObjectId) -> Project:
         return Project.from_dict_list(find_result)
 
 
-def create_project(title: str, workspaceId: ObjectId) -> Project:
+def create_project(title: str, workspaceId: ObjectId, creator_firebase_id: str) -> Project:
+    workspace = workspace_service.get_workspace(workspace_id=workspaceId)
+    user_id = users_service.get_user_by_firebase_id(firebase_id=creator_firebase_id).id
+    if workspace is None:
+        abort(404, description="Workspace not found")
     project = Project(
         _id=None,
         title=title,
-        workspaceId=workspaceId,
+        workspaceId=ObjectId(workspaceId),
         teams=list(),
-        users=list())
+        users=[user_id])
     insert_result = db.insert(collection, project)
     if insert_result is not None:
         return Project.from_dict(insert_result)
@@ -48,13 +55,4 @@ def add_user(project_id: str, user_id: str, is_editor: bool) -> bool:
 
 
 def get_user_projects(workspace_id: str, user_id: ObjectId) -> list:
-    projects = Project.from_dict_list(db.find(collection, workspaceId=workspace_id))
-
-    user_projects = list()
-    for project in projects:
-        for user in project.users:
-            if user['userId'] == user_id:
-                user_projects.append(project)
-                break
-
-    return user_projects
+    return Project.from_dict_list(db.find(collection, workspaceId=ObjectId(workspace_id), users=user_id))

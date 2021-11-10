@@ -2,6 +2,7 @@ import settings
 import requests
 import src.repository as repo
 from src.models.user import User
+from src.models.workspace import Workspace
 
 port_no = str(settings.APP_PORT)
 # port_no = str(5000)
@@ -35,3 +36,12 @@ def create_user(token: str):
     result = User.from_json(response.content.decode())
     created_resources.append({repo.Collection.USER: result._id})
     return result
+
+def create_workspace_fixture(token: str):
+    request_body = {
+        "name": "test workspace"
+    }
+    response = requests.post(url=base_url + "workspaces", json=request_body, headers={"Authorization": token})
+    workspace = Workspace.from_json(response.content.decode())
+    created_resources.append({repo.Collection.WORKSPACE: workspace.id})
+    return workspace

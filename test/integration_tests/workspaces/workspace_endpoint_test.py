@@ -26,13 +26,7 @@ def before_test():
 
 @pytest.fixture
 def create_workspace_fixture() -> Workspace:
-    request_body = {
-        "name": "test workspace"
-    }
-    response = requests.post(url=base_url + "workspaces", json=request_body, headers={"Authorization": token})
-    workspace = Workspace.from_json(response.content.decode())
-    created_resources.append({repo.Collection.WORKSPACE: workspace.id})
-    return workspace
+    return util.create_workspace_fixture(token)
 
 
 def test_get_workspaces_for_user(create_workspace_fixture):
