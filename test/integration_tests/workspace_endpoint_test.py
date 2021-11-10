@@ -10,7 +10,7 @@ import json
 
 created_resources = []
 port_no = str(settings.APP_PORT)
-port_no = str(5000)
+#port_no = str(5000)
 base_url = "http://" + settings.APP_HOST + ":" + port_no + "/"
 
 

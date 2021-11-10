@@ -7,11 +7,11 @@ api = Blueprint('users_api', __name__)
 
 
 @api.route("", methods=['POST'])
-def add_user():
+def ensure_user_exists():
     try:
         user = users_service.get_user_by_firebase_id(g.firebase_id)
         if user is not None:
-            abort(400, description="User already exists")
+            return Response(user.as_json(), mimetype="application/json")
 
         user = users_service.add_user(User(
             _id=None,
