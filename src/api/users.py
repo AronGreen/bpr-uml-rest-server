@@ -1,6 +1,8 @@
 from flask import Blueprint, g, Response, abort
+from src.models.invitation import Invitation
 
 from src.services import users_service
+from src.services import invitation_service
 from src.models.user import User
 
 api = Blueprint('users_api', __name__)
@@ -27,6 +29,12 @@ def ensure_user_exists():
 
 
 @api.route("/teams", methods=['GET'])
-def get_team_for_user():
+def get_teams_for_user():
     find_result = users_service.get_teams_for_user(g.firebase_id)
     return Response(User.as_json_list(find_result), mimetype="application/json")
+
+
+@api.route("/invitations", methods=['GET'])
+def get_workspace_invitations_for_user():
+    find_result = invitation_service.get_workspace_invitations_for_user(g.user_email)
+    return Response(Invitation.as_json_list(find_result), mimetype="application/json")

@@ -30,3 +30,8 @@ def get_invitation(workspace_id: ObjectId, invitee_email_address: str) -> Invita
                              inviteeEmailAddress=invitee_email_address)
     if invitation is not None:
         return Invitation.from_dict(invitation)
+
+def get_workspace_invitations_for_user(email: str) -> list:
+    find_result = db.find(collection=collection, inviteeEmailAddress=email)
+    if find_result is not None:
+        return Invitation.from_dict_list(find_result)

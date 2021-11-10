@@ -72,15 +72,12 @@ def test_invite_user(create_workspace_fixture):
     response = requests.post(url=base_url + "workspaces/invitation", json=request_body,
                              headers={"Authorization": token})
 
-
     assert response.status_code == 200
 
     invitation = src.services.invitation_service.get_invitation(workspace_id=create_workspace_fixture._id,
                                                                 invitee_email_address=invitee_email_address)
     assert invitation is not None
-
-    if invitation is not None:
-        created_resources.append({repo.Collection.INVITATION: invitation._id})
+    created_resources.append({repo.Collection.INVITATION: invitation._id})
 
 
 def test_invite_user_already_invited(create_workspace_fixture):
