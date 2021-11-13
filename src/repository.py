@@ -49,6 +49,12 @@ def find(collection: Collection, **kwargs) -> list:
         if isinstance(kwargs['id'], str):
             kwargs['_id'] = ObjectId(kwargs['id'])
         del kwargs['id']
+    
+    if kwargs.get('nested_conditions') is not None:
+        nested_conditions = kwargs.get('nested_conditions')
+        for item in nested_conditions.keys():
+            kwargs[item]=nested_conditions[item]
+        kwargs.pop("nested_conditions")
 
     return list(__get_collection(collection).find(kwargs))
 
@@ -128,9 +134,30 @@ def push(collection: Collection, document_id: ObjectId, field_name: str, item) -
     # NOTE: Consider changing $push to $addToSet to avoid dupes in list
     update_result = __get_collection(collection).update_one(
         {'_id': ObjectId(document_id)},
-        {'$push': {field_name: item}}
+        {'$addToSet': {field_name: item}}
     )
     return update_result.modified_count > 0
+
+def push_list(collection: Collection, document_id: ObjectId, field_name: str, items: list) -> bool:
+    """
+    Inserts item into a list on a document.
+    :rtype: object
+    :param collection: collection to query
+    :param document_id:document id
+    :param field_name: list field on document
+    :param items: Documents to add
+    :return:  True if a document was modified
+    """
+    if len(items) > 0:
+        if isinstance(items[0], SimpleMongoDocumentBase) or isinstance(items[0], MongoDocumentBase):
+            items = SimpleMongoDocumentBase.as_dict_list(items)
+
+        # NOTE: Consider changing $push to $addToSet to avoid dupes in list
+        update_result = __get_collection(collection).update_one(
+            {'_id': ObjectId(document_id)},
+            {'$addToSet': {field_name: {'$each':  items}}}
+        )
+        return update_result.modified_count > 0
 
 
 def pull(collection: Collection, document_id: ObjectId, field_name: str, item) -> bool:

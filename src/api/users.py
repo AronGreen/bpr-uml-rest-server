@@ -1,5 +1,5 @@
 from flask import Blueprint, g, Response, abort
-from src.models.invitation import Invitation
+from src.models.invitation import Invitation, InvitationGetModel
 
 from src.services import users_service
 from src.services import invitation_service
@@ -37,4 +37,4 @@ def get_teams_for_user():
 @api.route("/invitations", methods=['GET'])
 def get_workspace_invitations_for_user():
     find_result = invitation_service.get_workspace_invitations_for_user(g.user_email)
-    return Response(Invitation.as_json_list(find_result), mimetype="application/json")
+    return Response(InvitationGetModel.as_json_list(find_result), mimetype="application/json")

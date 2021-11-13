@@ -38,7 +38,7 @@ def get_workspace_name(workspace_id) -> str:
 def get_user_workspaces(firebase_id: str) -> list:
     # TODO: filter so only current users workspaces are present
     user = users_service.get_user_by_firebase_id(firebase_id)
-    find_result = db.find(collection, users=user.id)
+    find_result = db.find(collection=collection, users=user.id)
     if find_result is not None:
         return Workspace.from_dict_list(find_result)
 
@@ -59,14 +59,12 @@ def invite_user(invitation: Invitation) -> str:
             subject = "Diagramz invitation"
             message = "{} sent you an invitation on Diagramz to collaborate on {}".format(g.user_name, workspace.name)
             email_service.send_email(invitation.inviteeEmailAddress, subject, message)
-            invitation_service.add_invitation(invitation)
-            return "User invited"
+            return invitation_service.add_invitation(invitation)
         else:
             abort(400, description="Invalid email")
     else:
         if user.id not in workspace.users:
-            invitation_service.add_invitation(invitation)
-            return "User invited"
+            return invitation_service.add_invitation(invitation)
         else:
             abort(400, description="User already in workspace")
 
@@ -118,12 +116,9 @@ def get_workspace_users(workspaceId: str | ObjectId) -> list:
 
 
 def is_user_in_workspace(workspace_id: ObjectId, user_id: ObjectId):
-    workspace = db.find_one(collection, id=workspace_id)
+    workspace = db.find_one(collection, _id=workspace_id)
     if workspace is not None:
-        print(workspace)
-        print(user_id)
         workspace = Workspace.from_dict(workspace)
-        print(user_id in workspace.users)
     if user_id in workspace.users:
         return True
     return False

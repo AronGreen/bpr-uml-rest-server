@@ -14,13 +14,18 @@ collection = db.Collection.PROJECT
 def get(project_id: str) -> Project:
     find_result = db.find_one(collection, id=project_id)
     if find_result is not None:
-        return Project.from_dict(find_result)
+        project = Project.from_dict(find_result)
+        project.users = ProjectUser.from_dict_list(project.users)
+        return project
 
 
 def get_for_workspace(workspace_id: ObjectId) -> Project:
     find_result = db.find(collection, workspaceId=workspace_id)
     if find_result is not None:
-        return Project.from_dict_list(find_result)
+        projects = Project.from_dict_list(find_result)
+        for project in projects:
+           project.users = ProjectUser.from_dict_list(project.users)
+        return project 
 
 
 def create_project(title: str, workspaceId: ObjectId, creator_firebase_id: str) -> Project:
@@ -33,7 +38,7 @@ def create_project(title: str, workspaceId: ObjectId, creator_firebase_id: str) 
         title=title,
         workspaceId=ObjectId(workspaceId),
         teams=list(),
-        users=[user_id])
+        users=[ProjectUser(userId=user_id, isEditor=True)])
     insert_result = db.insert(collection, project)
     if insert_result is not None:
         return Project.from_dict(insert_result)
@@ -49,10 +54,25 @@ def delete_project(project_id: str | ObjectId) -> bool:
     return db.delete(collection, id=project_id)
 
 
-def add_user(project_id: str, user_id: str, is_editor: bool) -> bool:
-    user = ProjectUser(userId=ObjectId(user_id), isEditor=is_editor)
-    return db.push(collection=collection, document_id=ObjectId(project_id), field_name='users', item=user)
+def add_users(project_id: str, users: list) -> Project:
+    project = get(project_id=project_id)
+    ensure_no_duplicates(users)
+    for user in users:
+        if not workspace_service.is_user_in_workspace(workspace_id=project.workspaceId, user_id=ObjectId(user.userId)):
+            abort(400)
+        for project_user in project.users:
+            if user.userId == project_user.userId:
+                abort(400)
+    items = ProjectUser.as_dict_list(users)
+    db.push_list(collection=collection, document_id=ObjectId(project_id), field_name='users', items=items)
+    return get(project_id=project_id)
 
 
 def get_user_projects(workspace_id: str, user_id: ObjectId) -> list:
-    return Project.from_dict_list(db.find(collection, workspaceId=ObjectId(workspace_id), users=user_id))
+    return Project.from_dict_list(db.find(collection=collection, nested_conditions={'users.userId': user_id}, workspaceId=ObjectId(workspace_id)))
+
+def ensure_no_duplicates(project_users: list):
+    for i in range(0, len(project_users)):
+        for j in range(i+1, len(project_users)):
+            if project_users[i].userId == project_users[j].userId:
+                abort(400)

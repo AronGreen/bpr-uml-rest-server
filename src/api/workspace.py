@@ -14,7 +14,6 @@ api = Blueprint('workspace_api', __name__)
 @api.route("", methods=['POST'])
 def create_workspace():
     request_data = request.get_json()
-    print(request_data, flush=True)
     if 'name' in request_data:
         to_create = Workspace(
             _id=None,
@@ -62,7 +61,7 @@ def invite_user():
             workspaceId=ObjectId(request_data['workspaceId']),
             inviteeEmailAddress=request_data['inviteeEmailAddress'])
         result = workspace_service.invite_user(invitation)
-        return Response(status=200, response=result, mimetype="application/json")
+        return Response(result.as_json(), status=200, mimetype="application/json")
     return Response("Workspace id and invitee email address are required", mimetype="application/json")
 
 

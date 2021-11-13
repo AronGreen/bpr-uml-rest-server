@@ -10,14 +10,22 @@ class Project(MongoDocumentBase):
     users: list  # ProjectUser
     teams: list  # ProjectTeam
 
+@dataclass
+class ObjectIdReferencer(SimpleMongoDocumentBase):
+
+    @classmethod
+    def to_object_ids(cls, field_name: str, objects: list):
+        for object in objects:
+            setattr(object, field_name, ObjectId(getattr(object, field_name))) 
+        return objects
 
 @dataclass
-class ProjectUser(SimpleMongoDocumentBase):
+class ProjectUser(ObjectIdReferencer):
     userId: ObjectId
     isEditor: bool
 
 
 @dataclass
-class ProjectTeam(SimpleMongoDocumentBase):
+class ProjectTeam(ObjectIdReferencer):
     teamId: ObjectId
     isEditor: bool
