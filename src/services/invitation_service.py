@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from bson import ObjectId
 
-from src.models.invitation import Invitation
+from src.models.invitation import Invitation, InvitationGetModel
+import src.services.workspace_service as workspace_service
+import src.services.users_service as users_service
 import src.repository as db
 
 collection = db.Collection.INVITATION
@@ -34,4 +36,20 @@ def get_invitation(workspace_id: ObjectId, invitee_email_address: str) -> Invita
 def get_workspace_invitations_for_user(email: str) -> list:
     find_result = db.find(collection=collection, inviteeEmailAddress=email)
     if find_result is not None:
-        return Invitation.from_dict_list(find_result)
+        invitations = Invitation.from_dict_list(find_result)
+        invitation_get_models = []
+        for invitation in invitations:
+            invitation_get_models.append(get_invitation_get_model(invitation))
+        return invitation_get_models
+
+def get_invitation_get_model(invitation: Invitation):
+    workspace=workspace_service.get_workspace(invitation.workspaceId)
+    user=users_service.get_user(invitation.inviterId)
+    return InvitationGetModel(
+        _id=invitation._id,
+        inviterId=invitation.inviterId,
+        workspaceId=invitation.workspaceId,
+        inviteeEmailAddress=invitation.inviteeEmailAddress,
+        workspaceName=workspace.name,
+        inviterUserName=user.name
+    )

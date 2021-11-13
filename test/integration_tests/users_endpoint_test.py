@@ -7,15 +7,15 @@ import src.repository as repo
 
 created_resources = []
 port_no = str(settings.APP_PORT)
-#port_no = str(5000)
+port_no = str(5000)
 base_url = "http://" + settings.APP_HOST + ":" + port_no + "/users"
 
 @pytest.fixture(autouse=True)
 def before_test():
     global token
-    token = util.get_token()
+    token = util.get_default_token_fixture()
     yield
-    util.cleanup(created_resources)
+    util.cleanup_fixture(created_resources)
     created_resources.clear()
 
 def test_add_user():

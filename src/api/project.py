@@ -1,5 +1,5 @@
 from flask import Blueprint, g, request, abort, Response
-
+from src.models.project import ProjectUser
 from src.services import project_service
 
 api = Blueprint('projects_api', __name__)
@@ -9,30 +9,30 @@ api = Blueprint('projects_api', __name__)
 @api.route("", methods=['POST'])
 def create_project():
     """
-           Create a new project
-           ---
-           tags:
-             - projects
-           parameters:
-             - in: body
-               name: body
-               schema:
-                 required:
-                   - title
-                   - workspaceId
-                 properties:
-                   title:
-                     type: string
-                     description: title of the project
-                   workspaceId:
-                     type: string
-                     description: id of the workspace
-           responses:
-             200:
-               description: Project created
-             400:
-                description: Insufficient data in request
-           """
+    Create a new project
+    ---
+    tags:
+      - projects
+    parameters:
+      - in: body
+        name: body
+        schema:
+          required:
+            - title
+            - workspaceId
+          properties:
+            title:
+              type: string
+              description: title of the project
+            workspaceId:
+              type: string
+              description: id of the workspace
+    responses:
+      200:
+        description: Project created
+      400:
+         description: Insufficient data in request
+   """
     request_data = request.get_json()
     try:
         create_result = project_service.create_project(
@@ -45,8 +45,8 @@ def create_project():
         abort(400, "Insufficient data in request")
 
 
-@api.route("/<projectId>/user", methods=['POST'])
-def add_user(projectId: str):
+@api.route("/<projectId>/users", methods=['POST'])
+def add_users(projectId: str):
     """
     Add a user to project
     ---
@@ -71,13 +71,13 @@ def add_user(projectId: str):
         description: User added
       400:
          description: Insufficient data in request
-    """
+   """
     request_data = request.get_json()
     try:
-        result = project_service.add_user(
+        result = project_service.add_users(
             project_id=projectId,
-            user_id=request_data['userId'],
-            is_editor=request_data['isEditor'])
-        return Response({'success': result}, mimetype="application/json")
+            users= ProjectUser.to_object_ids("userId", ProjectUser.from_json_list(request_data['users']))
+            )
+        return Response(result.as_json(), mimetype="application/json")
     except KeyError:
         abort(400, "Insufficient data in request body")
