@@ -17,7 +17,6 @@ def create_project():
              - in: body
                name: body
                schema:
-                 id: CreateProject
                  required:
                    - title
                    - workspaceId
@@ -57,7 +56,6 @@ def add_user(projectId: str):
       - in: body
         name: body
         schema:
-          id: AddProjectUser
           required:
             - userId
             - isEditor

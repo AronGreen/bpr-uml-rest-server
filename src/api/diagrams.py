@@ -8,6 +8,50 @@ api = Blueprint('diagrams_api', __name__)
 # TODO: when adding roles: make sure that the creator has access and permissions to add team to the workspace
 @api.route("", methods=['POST'])
 def create_diagram():
+    """
+      Create a new diagram
+      ---
+      tags:
+        - diagrams
+      parameters:
+        - in: body
+          name: workspace
+          schema:
+            required:
+              - title
+              - projectId
+              - path
+            properties:
+              title:
+                type: string
+              projectId:
+                type: string
+              path:
+                type: string
+      responses:
+        200:
+          description: User created
+          schema:
+            type: object
+            properties:
+              _id:
+                type: str
+                example: '61901338d13eab96f1e5d153'
+              title:
+                type: string
+                example: My new diagram
+              projectId:
+                type: str
+                example: '61901338d13eab96f1e5d153'
+              path:
+                type: string
+                example: path/of/diagram
+              models:
+                type: array
+                items:
+                  type: string
+                example: ['61901488d13eab96f1e5d154']
+      """
     request_data = request.get_json()
     try:
         create_result = diagram_service.create_diagram(
