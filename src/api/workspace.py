@@ -13,6 +13,28 @@ api = Blueprint('workspace_api', __name__)
 
 @api.route("", methods=['POST'])
 def create_workspace():
+    """
+      Create a new workspace
+      ---
+      tags:
+        - workspaces
+      parameters:
+        - in: body
+          name: body
+          schema:
+            id: CreateWorkspace
+            required:
+              - name
+            properties:
+              name:
+                type: string
+                description: name of workspace to create
+      responses:
+        200:
+          description: User created
+        400:
+           description: Insufficient data in request
+      """
     request_data = request.get_json()
     print(request_data, flush=True)
     if 'name' in request_data:
@@ -27,6 +49,16 @@ def create_workspace():
 
 @api.route("", methods=['GET'])
 def get_workspaces():
+    """
+      Get workspaces for current user.
+      If none is found, empty list is returned.
+      ---
+      tags:
+        - workspaces
+      responses:
+        200:
+          description: List gotten
+      """
     firebase_id = g.firebase_id
     data = workspace_service.get_user_workspaces(firebase_id)
     result = Workspace.as_json_list(data)

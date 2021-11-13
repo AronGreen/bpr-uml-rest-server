@@ -2,9 +2,10 @@ import json
 
 import firebase_admin as fb_admin
 from firebase_admin import auth as fb_auth
-from flask import Flask, render_template, request, g, abort
+from flask import Flask, render_template, request, g, abort, jsonify
 from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
+from flask_swagger import swagger
 
 import src.services.log_service as log
 import settings as settings
@@ -34,11 +35,24 @@ def index():
     return render_template('index.html')
 
 
+@app.route("/swagger")
+def swagger_page():
+    return render_template('swagger/index.html')
+
+
+@app.route("/spec")
+def spec():
+    swag = swagger(app)
+    swag['info']['version'] = "1.0"
+    swag['info']['title'] = "My API"
+    return jsonify(swag)
+
+
 @app.before_request
 def check_auth():
     if request.method == 'OPTIONS':
         return
-    if request.path in ('/', '/mate', '/favicon.ico'):
+    if request.path in ('/', '/spec', '/swagger', '/favicon.ico') or request.path.startswith('/static'):
         return
     try:
         id_token = request.headers['Authorization'].replace('Bearer ', '')
