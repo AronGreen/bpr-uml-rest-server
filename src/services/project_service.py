@@ -29,7 +29,7 @@ def get_for_workspace(workspace_id: ObjectId) -> Project:
 
 
 def create_project(title: str, workspaceId: ObjectId, creator_firebase_id: str) -> Project:
-    workspace = workspace_service.get_workspace(workspace_id=workspaceId)
+    workspace = workspace_service.get_workspace(workspace_id=ObjectId(workspaceId))
     user_id = users_service.get_user_by_firebase_id(firebase_id=creator_firebase_id).id
     if workspace is None:
         abort(404, description="Workspace not found")

@@ -41,6 +41,12 @@ def create_dummy_users_fixture() -> list:
 def make_user_invitations_fixture() -> list:
     return util.make_user_invitations_fixture(token, user)
     
+def test_get_workspace(create_workspace_fixture):
+    response = requests.get(url=base_url + "workspaces/" + str(create_workspace_fixture._id), headers={"Authorization": token})
+    assert response.status_code == 200
+    result = Workspace.from_json(response.content.decode())
+    assert str(result._id) == str(create_workspace_fixture._id)
+    assert str(result.name) == create_workspace_fixture.name
 
 def test_get_workspaces_for_user(create_workspace_fixture):
     response = requests.get(url=base_url + "workspaces", headers={"Authorization": token})

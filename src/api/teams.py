@@ -1,7 +1,9 @@
 from flask import Blueprint, request, abort, Response
+from werkzeug.wrappers import response
 
 from src.services import teams_service as service
 from src.models.team import Team
+from src.models.response import ApiResponse
 
 api = Blueprint('teams_api', __name__)
 
@@ -53,7 +55,7 @@ def create_team():
             return Response(created.as_json(), mimetype="application/json")
         else:
             return Response('{}', mimetype="application/json")
-    return "properties missing"
+    return ApiResponse(response="properties missing").as_json()
 
 
 @api.route("/users", methods=['POST'])

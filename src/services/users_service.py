@@ -13,14 +13,14 @@ collection = db.Collection.USER
 
 def invite_user(invitation: Invitation) -> str:
     if email_utils.is_valid(invitation.inviteeEmailAddress):
-        workspace_name = workspace_service.get_workspace_name(invitation.workspaceId)
+        workspace_name = workspace_service.get_workspace(invitation.workspaceId).name
         subject = "Diagramz invitation"
         message = f"{invitation.inviterId} sent you an invitation on Diagramz to collaborate on {workspace_name}"
         return email_service.send_email(invitation.inviteeEmailAddress, subject, message)
 
 
-def get_user(userId: str) -> User:
-    find_result = db.find_one(collection, id=userId)
+def get_user(userId: ObjectId) -> User:
+    find_result = db.find_one(collection, _id=userId)
     if find_result is not None:
         return User.from_dict(find_result)
 

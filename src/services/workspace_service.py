@@ -25,15 +25,10 @@ def create_workspace(workspace: Workspace) -> Workspace:
         return Workspace.from_dict(created_workspace)
 
 
-def get_workspace(workspace_id: str) -> Workspace:
-    find_result = db.find_one(collection, id=workspace_id)
+def get_workspace(workspace_id: ObjectId) -> Workspace:
+    find_result = db.find_one(collection, _id=workspace_id)
     if find_result is not None:
         return Workspace.from_dict(find_result)
-
-
-def get_workspace_name(workspace_id) -> str:
-    return get_workspace(workspace_id).name
-
 
 def get_user_workspaces(firebase_id: str) -> list:
     # TODO: filter so only current users workspaces are present
@@ -45,7 +40,7 @@ def get_user_workspaces(firebase_id: str) -> list:
 
 # TODO: move to invitation service
 def invite_user(invitation: Invitation) -> str:
-    workspace = get_workspace(invitation.workspaceId.__str__())
+    workspace = get_workspace(invitation.workspaceId)
     if workspace is None:
         return abort(400, description="Workspace does not exist")
 
@@ -79,7 +74,7 @@ def respond_to_invitation(invitation_id: str | ObjectId, accepted: bool) -> str:
     return_text = ""
     if accepted:
         user = users_service.get_user_by_email_address(invitation.inviteeEmailAddress)
-        workspace = get_workspace(invitation.workspaceId.__str__())
+        workspace = get_workspace(invitation.workspaceId)
         if user is not None and workspace is not None:
             add_workspace_user(invitation.workspaceId, user.id)
             return_text = "User added"

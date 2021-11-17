@@ -6,6 +6,7 @@ from flask.wrappers import Response
 from src.models.invitation import Invitation
 from src.models.user import User
 from src.models.workspace import Workspace
+from src.models.response import ApiResponse
 from src.services import workspace_service, users_service, project_service
 
 api = Blueprint('workspace_api', __name__)
@@ -118,7 +119,7 @@ def get_workspace(workspaceId: str):
                   type: string
                 example: ['61901488d13eab96f1e5d154']
       """
-    result = workspace_service.get_workspace(workspaceId)
+    result = workspace_service.get_workspace(ObjectId(workspaceId))
     return Response(result.as_json(), mimetype="application/json")
 
 
@@ -244,7 +245,7 @@ def invite_user():
 
 
 # TODO: remember to check for permissions when we get to that part
-@api.route("/user", methods=['PATCH'])
+@api.route("/user", methods=['DELETE'])
 def remove_user_from_workspace():
     """
       Remove user from workspace
@@ -307,5 +308,5 @@ def respond_to_invitation():
     if 'invitationId' in request_data and 'accepted' in request_data:
         invitation_id = request_data['invitationId']
         accepted = request_data['accepted']
-        return Response(status=200, response=workspace_service.respond_to_invitation(invitation_id, accepted))
-    return "Workspace id and user id"
+        return Response(status=200, response=ApiResponse(response=workspace_service.respond_to_invitation(invitation_id, accepted)))
+    return Response(status=400, response=ApiResponse(response="Insufficient data").as_json())

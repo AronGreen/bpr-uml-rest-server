@@ -2,6 +2,7 @@ import smtplib
 import ssl
 import settings as settings
 import src.services.log_service as log
+from src.models.response import ApiResponse
 
 # TODO: move to env
 smtp_server = "smtp.gmail.com"
@@ -27,5 +28,5 @@ Subject: {0}
             server.sendmail(settings.SMTP_EMAIL_ADDRESS, receiver_email, email)
     except Exception as err: # TODO: Catch specific exceptions and handle them
         log.log_error(err, "error while sending email")
-        return "An error occurred"
-    return "Invitation sent"
+        return ApiResponse(response="An error occurred").as_json()
+    return ApiResponse(response="Invitation sent").as_json()

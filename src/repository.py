@@ -3,7 +3,7 @@ import pymongo as mongo
 from bson.objectid import ObjectId
 
 import settings as settings
-from src.models.mongo_document_base import MongoDocumentBase, SimpleMongoDocumentBase
+from src.models.mongo_document_base import MongoDocumentBase, SerializableObject
 
 
 class Collection(Enum):
@@ -128,7 +128,7 @@ def push(collection: Collection, document_id: ObjectId, field_name: str, item) -
     :param item: Document to modify
     :return:  True if a document was modified
     """
-    if isinstance(item, SimpleMongoDocumentBase) or isinstance(item, MongoDocumentBase):
+    if isinstance(item, SerializableObject) or isinstance(item, MongoDocumentBase):
         item = item.as_dict()
 
     # NOTE: Consider changing $push to $addToSet to avoid dupes in list
@@ -149,8 +149,8 @@ def push_list(collection: Collection, document_id: ObjectId, field_name: str, it
     :return:  True if a document was modified
     """
     if len(items) > 0:
-        if isinstance(items[0], SimpleMongoDocumentBase) or isinstance(items[0], MongoDocumentBase):
-            items = SimpleMongoDocumentBase.as_dict_list(items)
+        if isinstance(items[0], SerializableObject) or isinstance(items[0], MongoDocumentBase):
+            items = SerializableObject.as_dict_list(items)
 
         # NOTE: Consider changing $push to $addToSet to avoid dupes in list
         update_result = __get_collection(collection).update_one(

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from bson.objectid import ObjectId
-from src.models.mongo_document_base import MongoDocumentBase, SimpleMongoDocumentBase
+from src.models.mongo_document_base import MongoDocumentBase, SerializableObject
 
 
 @dataclass
@@ -11,7 +11,7 @@ class Project(MongoDocumentBase):
     teams: list  # ProjectTeam
 
 @dataclass
-class ObjectIdReferencer(SimpleMongoDocumentBase):
+class ObjectIdReferencer(SerializableObject):
 
     @classmethod
     def to_object_ids(cls, field_name: str, objects: list):

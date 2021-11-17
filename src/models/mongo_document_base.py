@@ -5,7 +5,7 @@ import json
 
 # noinspection PyArgumentList
 @dataclass
-class SimpleMongoDocumentBase:
+class SerializableObject:
     """
     Represents a base mongo document.
     Provides conversion methods to and from dict and json.
@@ -53,7 +53,7 @@ class SimpleMongoDocumentBase:
 
 
 @dataclass
-class MongoDocumentBase(SimpleMongoDocumentBase):
+class MongoDocumentBase(SerializableObject):
     """
     Represents a base mongo document with an _id property.
     Provides conversion methods to and from dict and json.
