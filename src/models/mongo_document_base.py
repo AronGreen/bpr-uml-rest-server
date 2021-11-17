@@ -51,6 +51,13 @@ class SerializableObject:
                 if attr is not None and isinstance(attr, str):
                     setattr(self, field.name, ObjectId(attr))
 
+@dataclass
+class ObjectIdReferencer(SerializableObject):
+    @classmethod
+    def to_object_ids(cls, field_name: str, objects: list):
+        for object in objects:
+            setattr(object, field_name, ObjectId(getattr(object, field_name))) 
+        return objects
 
 @dataclass
 class MongoDocumentBase(SerializableObject):

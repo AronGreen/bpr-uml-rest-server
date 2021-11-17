@@ -8,6 +8,7 @@ from src.models.invitation import Invitation
 import src.services.workspace_service as workspace_service
 import src.services.invitation_service as invitation_service
 from src.models.project import Project
+from src.models.team import Team
 
 port_no = str(settings.APP_PORT)
 port_no = str(5000)
@@ -64,7 +65,34 @@ def create_workspaces_fixture(token: str):
     workspace_2 = create_workspace_fixture(token)
     return [workspace_1, workspace_2]
 
-def create_workspace_projects_fixture(workspace_id: str, token: str) -> list:
+def create_team_fixture(token: str, workspaceId: str):
+    team_name = "create_team_fixture team"
+    request_body = {
+        "name": team_name,
+        "workspaceId": workspaceId
+    }
+    response = requests.post(url=base_url + "teams", json=request_body, headers={"Authorization": token})
+    team = Team.from_json(response.content.decode())
+    created_resources.append({repo.Collection.TEAM: team._id})
+    return team
+
+def create_dummy_users_fixture():
+    new_token_1 = get_token_fixture(settings.TEST_EMAIL_1, settings.TEST_PASSWORD_1)
+    user_1 = create_user_fixture(new_token_1)
+    new_token_2 = get_token_fixture(settings.TEST_EMAIL_2, settings.TEST_PASSWORD_2)
+    user_2 = create_user_fixture(new_token_2)
+    return [user_1, user_2]
+
+def create_dummy_user_with_token_fixture():
+    new_token_1 = get_token_fixture(settings.TEST_EMAIL_1, settings.TEST_PASSWORD_1)
+    user_1 = create_user_fixture(new_token_1)
+    user = {
+       "user": user_1,
+       "token": new_token_1 
+    }
+    return user
+
+def create_projects_fixture(workspace_id: str, token: str) -> list:
     request_body = {
         "title": "project 1",
         "workspaceId": str(workspace_id)
@@ -83,36 +111,33 @@ def create_workspace_projects_fixture(workspace_id: str, token: str) -> list:
 
     return [project1, project2]
 
-def create_dummy_users_fixture():
-    new_token_1 = get_token_fixture(settings.TEST_EMAIL_1, settings.TEST_PASSWORD_1)
-    user_1 = create_user_fixture(new_token_1)
-    new_token_2 = get_token_fixture(settings.TEST_EMAIL_2, settings.TEST_PASSWORD_2)
-    user_2 = create_user_fixture(new_token_2)
-    return [user_1, user_2]
-
-def create_dummy_user_with_token_fixture():
-    new_token_1 = get_token_fixture(settings.TEST_EMAIL_1, settings.TEST_PASSWORD_1)
-    user_1 = create_user_fixture(new_token_1)
-    user = {
-       "user": user_1,
-       "token": new_token_1 
-    }
-    return user
-
 def add_users_to_workspace_fixture(workspace_id: str, users: list):
     for user in users:
         workspace_service.add_workspace_user(workspace_id, user.id)
 
-def create_workspace_with_users_and_projects_fixture(token: str):
+def create_workspace_with_users_fixture(token: str):
     workspace = create_workspace_fixture(token)
     users = create_dummy_users_fixture()
     add_users_to_workspace_fixture(workspace_id=workspace.id, users=users)
-    workspace_projects = create_workspace_projects_fixture(workspace_id = str(workspace.id), token=token)
     return {
         "workspace": workspace,
-        "users": users,
-        "projects": workspace_projects
+        "users": users
     }
+
+def create_workspace_with_users_and_team_fixture(token: str):
+    workspace_with_users = create_workspace_with_users_fixture(token)
+    team = create_team_fixture(token, str(workspace_with_users["workspace"].id))
+    workspace_with_users["team"] = team
+    return workspace_with_users
+
+def create_workspace_with_users_and_projects_fixture(token: str):
+    workspace_with_users = create_workspace_with_users_fixture(token)
+    #workspace = create_workspace_fixture(token)
+    #users = create_dummy_users_fixture()
+    #add_users_to_workspace_fixture(workspace_id=workspace.id, users=users)
+    workspace_projects = create_projects_fixture(workspace_id = str(workspace_with_users["workspace"].id), token=token)
+    workspace_with_users["projects"] = workspace_projects
+    return workspace_with_users
 
 def make_user_invitations_fixture(token: str, user: User):
     dummy_user = create_dummy_user_with_token_fixture()

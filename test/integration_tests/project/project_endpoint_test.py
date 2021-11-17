@@ -29,7 +29,7 @@ def create_workspace_fixture() -> Workspace:
 @pytest.fixture
 def create_projects_fixture() -> list:
     workspace = util.create_workspace_fixture(token)
-    projects = util.create_workspace_projects_fixture(workspace_id=workspace.id, token=token)
+    projects = util.create_projects_fixture(workspace_id=workspace.id, token=token)
 
     project3 = Project(
         _id=None,

@@ -1,8 +1,9 @@
 from flask import Blueprint, request, abort, Response
 from werkzeug.wrappers import response
+from bson import ObjectId
 
 from src.services import teams_service as service
-from src.models.team import Team
+from src.models.team import Team, TeamUser
 from src.models.response import ApiResponse
 
 api = Blueprint('teams_api', __name__)
@@ -49,8 +50,10 @@ def create_team():
                 example: ['61901488d13eab96f1e5d154']
       """
     request_data = request.get_json()
-    if 'workspaceId' in request_data and 'teamName' in request_data:
-        created = service.create_team(Team.from_json(request_data))
+    if 'workspaceId' in request_data and 'name' in request_data:
+        workspaceId = request_data['workspaceId']
+        name = request_data['name']
+        created = service.create_team(Team(_id=None, workspaceId=ObjectId(workspaceId), name=name, users=[]))
         if created is not None:
             return Response(created.as_json(), mimetype="application/json")
         else:
@@ -85,12 +88,10 @@ def add_users():
             type: object
       """
     request_data = request.get_json()
-    if 'teamId' in request_data and 'userIds' in request_data:
+    if 'teamId' in request_data and 'users' in request_data:
         team_id = request_data['teamId']
-        user_ids = request_data['userIds']
-        for user_id in user_ids:
-            service.add_user(team_id, user_id)
-        return Response('{}', mimetype="application/json")
+        result = service.add_users(team_id, TeamUser.to_object_ids("userId", TeamUser.from_json_list(request_data['users'])))
+        return Response(result.as_json(), mimetype="application/json")
     abort(400)
 
 

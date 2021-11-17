@@ -4,7 +4,6 @@ import settings
 import src.repository as repo
 from src.models.workspace import Workspace
 from src.models.invitation import Invitation, InvitationGetModel
-from src.models.user import User
 import src.services.invitation_service
 import endpoint_test_util as util
 import json

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from flask import abort
+from src.util import list_util
 
 from bson import ObjectId
 
@@ -56,10 +57,10 @@ def delete_project(project_id: str | ObjectId) -> bool:
 
 def add_users(project_id: str, users: list) -> Project:
     project = get(project_id=project_id)
-    ensure_no_duplicates(users)
+    list_util.ensure_no_duplicates(users, "userId")
+    if not workspace_service.are_users_in_workspace(workspace_id=project.workspaceId, user_ids=ObjectId(users)):
+        abort(400)
     for user in users:
-        if not workspace_service.is_user_in_workspace(workspace_id=project.workspaceId, user_id=ObjectId(user.userId)):
-            abort(400)
         for project_user in project.users:
             if user.userId == project_user.userId:
                 abort(400)
@@ -70,9 +71,3 @@ def add_users(project_id: str, users: list) -> Project:
 
 def get_user_projects(workspace_id: str, user_id: ObjectId) -> list:
     return Project.from_dict_list(db.find(collection=collection, nested_conditions={'users.userId': user_id}, workspaceId=ObjectId(workspace_id)))
-
-def ensure_no_duplicates(project_users: list):
-    for i in range(0, len(project_users)):
-        for j in range(i+1, len(project_users)):
-            if project_users[i].userId == project_users[j].userId:
-                abort(400)

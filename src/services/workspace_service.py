@@ -85,7 +85,7 @@ def respond_to_invitation(invitation_id: str | ObjectId, accepted: bool) -> str:
 
 
 def add_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) -> bool:
-    if not is_user_in_workspace(ObjectId(workspace_id), ObjectId(user_id)):
+    if not are_users_in_workspace(ObjectId(workspace_id), [ObjectId(user_id)]):
         return db.push(
             collection=db.Collection.WORKSPACE,
             document_id=workspace_id,
@@ -117,3 +117,13 @@ def is_user_in_workspace(workspace_id: ObjectId, user_id: ObjectId):
     if user_id in workspace.users:
         return True
     return False
+
+def are_users_in_workspace(workspace_id: ObjectId, user_ids: list):
+    workspace = db.find_one(collection, _id=workspace_id)
+    if workspace is not None:
+        workspace = Workspace.from_dict(workspace)
+    for user_id in user_ids:
+        if user_id in workspace.users:
+            return True
+        else:
+            return False
