@@ -58,7 +58,7 @@ def delete_project(project_id: str | ObjectId) -> bool:
 def add_users(project_id: str, users: list) -> Project:
     project = get(project_id=project_id)
     list_util.ensure_no_duplicates(users, "userId")
-    if not workspace_service.are_users_in_workspace(workspace_id=project.workspaceId, user_ids=ObjectId(users)):
+    if not workspace_service.are_users_in_workspace(workspace_id=project.workspaceId, user_ids=[user.userId for user in users]):
         abort(400)
     for user in users:
         for project_user in project.users:

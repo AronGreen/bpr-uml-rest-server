@@ -76,7 +76,7 @@ def add_users(projectId: str):
     try:
         result = project_service.add_users(
             project_id=projectId,
-            users= ProjectUser.to_object_ids("userId", ProjectUser.from_json_list(request_data['users']))
+            users=ProjectUser.to_object_ids("userId", ProjectUser.from_dict_list(request_data['users']))
             )
         return Response(result.as_json(), mimetype="application/json")
     except KeyError:

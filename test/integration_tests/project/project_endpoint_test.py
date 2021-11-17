@@ -91,11 +91,11 @@ def test_get_projects_for_workspace(create_projects_fixture):
     assert create_projects_fixture[3].id not in [project.id for project in result]
 
 def test_add_users_to_project(create_workspace_with_users_and_projects_fixture):
-    user_1 = ProjectUser(userId=create_workspace_with_users_and_projects_fixture["users"][0].id, isEditor=True)
-    user_2 = ProjectUser(userId=create_workspace_with_users_and_projects_fixture["users"][1].id, isEditor=False)
+    user_1 = ProjectUser(userId=str(create_workspace_with_users_and_projects_fixture["users"][0].id), isEditor=True)
+    user_2 = ProjectUser(userId=str(create_workspace_with_users_and_projects_fixture["users"][1].id), isEditor=False)
 
     request_body = {
-        "users": ProjectUser.as_json_list([user_1, user_2])
+        "users": ProjectUser.as_dict_list([user_1, user_2])
     }
     
     response = requests.post(url=base_url + "/projects/" + str(create_workspace_with_users_and_projects_fixture["projects"][0].id) + "/users", json=request_body, headers={"Authorization": token})
@@ -115,10 +115,10 @@ def test_add_users_to_project(create_workspace_with_users_and_projects_fixture):
             assert user.isEditor == user_2.isEditor
 
 def test_add_duplicate_users_to_project(create_workspace_with_users_and_projects_fixture):
-    user_1 = ProjectUser(userId=create_workspace_with_users_and_projects_fixture["users"][0].id, isEditor=True)
+    user_1 = ProjectUser(userId=str(create_workspace_with_users_and_projects_fixture["users"][0].id), isEditor=True)
 
     request_body = {
-        "users": ProjectUser.as_json_list([user_1, user_1])
+        "users": ProjectUser.as_dict_list([user_1, user_1])
     }
     
     response = requests.post(url=base_url + "/projects/" + str(create_workspace_with_users_and_projects_fixture["projects"][0].id) + "/users", json=request_body, headers={"Authorization": token})
@@ -130,9 +130,9 @@ def test_add_duplicate_users_to_project(create_workspace_with_users_and_projects
     assert user_1.userId not in [user.userId for user in project.users]
 
 def test_add_existing_user_to_project(create_projects_fixture):
-    user_1 = ProjectUser(userId=user.id, isEditor=False)
+    user_1 = ProjectUser(userId=str(user.id), isEditor=False)
     request_body = {
-        "users": ProjectUser.as_json_list([user_1])
+        "users": ProjectUser.as_dict_list([user_1])
     }
     
     response = requests.post(url=base_url + "/projects/" + str(create_projects_fixture[0].id) + "/users", json=request_body, headers={"Authorization": token})
