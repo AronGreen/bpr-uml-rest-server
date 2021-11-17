@@ -1,9 +1,10 @@
 from flask import Blueprint, g, Response, abort
-from src.models.invitation import Invitation, InvitationGetModel
+
+from bpr_data.models.invitation import InvitationGetModel
+from bpr_data.models.user import User
 
 from src.services import users_service
 from src.services import invitation_service
-from src.models.user import User
 
 api = Blueprint('users_api', __name__)
 

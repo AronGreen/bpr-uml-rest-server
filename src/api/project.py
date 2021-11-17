@@ -1,5 +1,6 @@
 from flask import Blueprint, g, request, abort, Response
-from src.models.project import ProjectUser
+from bpr_data.models.project import ProjectUser
+
 from src.services import project_service
 
 api = Blueprint('projects_api', __name__)

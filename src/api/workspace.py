@@ -1,12 +1,12 @@
 from bson import ObjectId
 from flask import Blueprint, request, g, abort
-
 from flask.wrappers import Response
 
-from src.models.invitation import Invitation
-from src.models.user import User
-from src.models.workspace import Workspace
-from src.models.response import ApiResponse
+from bpr_data.models.invitation import Invitation
+from bpr_data.models.user import User
+from bpr_data.models.workspace import Workspace
+from bpr_data.models.response import ApiResponse
+
 from src.services import workspace_service, users_service, project_service
 
 api = Blueprint('workspace_api', __name__)

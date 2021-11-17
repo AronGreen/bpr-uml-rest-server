@@ -1,12 +1,21 @@
 import pytest
 import requests
-import settings
-import src.repository as repo
-from src.models.workspace import Workspace
-from src.models.invitation import Invitation, InvitationGetModel
+import json
+
+from bpr_data.repository import Repository, Collection
+from bpr_data.models.workspace import Workspace
+from bpr_data.models.invitation import Invitation, InvitationGetModel
+
 import src.services.invitation_service
 import endpoint_test_util as util
-import json
+import settings
+
+repo = Repository.get_instance(
+    protocol=settings.MONGO_PROTOCOL,
+    default_db=settings.MONGO_DEFAULT_DB,
+    pw=settings.MONGO_PW,
+    host=settings.MONGO_HOST,
+    user=settings.MONGO_USER)
 
 created_resources = []
 port_no = str(settings.APP_PORT)
@@ -28,24 +37,30 @@ def before_test():
 def create_workspace_fixture() -> Workspace:
     return util.create_workspace_fixture(token)
 
+
 @pytest.fixture
 def create_workspaces_fixture() -> list:
     return util.create_workspaces_fixture(token)
+
 
 @pytest.fixture
 def create_dummy_users_fixture() -> list:
     return util.create_dummy_users_fixture()
 
+
 @pytest.fixture
 def make_user_invitations_fixture() -> list:
     return util.make_user_invitations_fixture(token, user)
-    
+
+
 def test_get_workspace(create_workspace_fixture):
-    response = requests.get(url=base_url + "workspaces/" + str(create_workspace_fixture._id), headers={"Authorization": token})
+    response = requests.get(url=base_url + "workspaces/" + str(create_workspace_fixture._id),
+                            headers={"Authorization": token})
     assert response.status_code == 200
     result = Workspace.from_json(response.content.decode())
     assert str(result._id) == str(create_workspace_fixture._id)
     assert str(result.name) == create_workspace_fixture.name
+
 
 def test_get_workspaces_for_user(create_workspace_fixture):
     response = requests.get(url=base_url + "workspaces", headers={"Authorization": token})
@@ -62,7 +77,7 @@ def test_create_workspace():
     }
     response = requests.post(url=base_url + "workspaces", json=request_body, headers={"Authorization": token})
     assert response.status_code == 200
-    created_resources.append({repo.Collection.WORKSPACE: Workspace.from_json(response.content.decode())._id})
+    created_resources.append({Collection.WORKSPACE: Workspace.from_json(response.content.decode())._id})
 
 
 def test_create_workspace_fail():
@@ -87,7 +102,7 @@ def test_invite_user(create_workspace_fixture):
     invitation = Invitation.from_json(response.content.decode())
     assert invitation.workspaceId == str(create_workspace_fixture.id)
     assert invitation.inviteeEmailAddress == invitee_email_address
-    created_resources.append({repo.Collection.INVITATION: invitation._id})
+    created_resources.append({Collection.INVITATION: invitation._id})
 
 
 def test_invite_user_already_invited(create_workspace_fixture):
@@ -102,12 +117,13 @@ def test_invite_user_already_invited(create_workspace_fixture):
                              headers={"Authorization": token})
     assert response.status_code == 400
     assert json.loads(response.content.decode())["description"] == "User already invited"
-    created_resources.append({repo.Collection.INVITATION: src.services.invitation_service.get_invitation(
+    created_resources.append({Collection.INVITATION: src.services.invitation_service.get_invitation(
         workspace_id=create_workspace_fixture._id, invitee_email_address=invitee_email_address)._id})
 
 
 def test_get_user_workspace_invitations(make_user_invitations_fixture):
-    response = requests.get(url=base_url + 'users/invitations', headers={"Authorization": make_user_invitations_fixture["user"]["token"]})
+    response = requests.get(url=base_url + 'users/invitations',
+                            headers={"Authorization": make_user_invitations_fixture["user"]["token"]})
     assert response.status_code == 200
     invitations = InvitationGetModel.from_json_list(response.content.decode())
     print(response.content.decode())
@@ -118,10 +134,8 @@ def test_get_user_workspace_invitations(make_user_invitations_fixture):
         assert invitations[i]._id == make_user_invitations_fixture["invitations"][i]._id
         assert invitations[i].inviterId == str(make_user_invitations_fixture["invitations"][i].inviterId)
         assert invitations[i].inviterUserName == user.name
-        workspace_name=""
+        workspace_name = ""
         for workspace in make_user_invitations_fixture["workspaces"]:
             if invitations[i].workspaceId == str(workspace._id):
                 workspace_name = workspace.name
         assert invitations[i].workspaceName == workspace_name
-
-    

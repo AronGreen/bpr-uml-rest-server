@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from bson import ObjectId
 from flask import g, abort
-from flask.wrappers import Response
 
 from bpr_data.repository import Repository, Collection
 from bpr_data.models.invitation import Invitation
-from bpr_data.models.project import Project
 from bpr_data.models.user import User
 from bpr_data.models.workspace import Workspace
 

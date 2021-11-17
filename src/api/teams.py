@@ -1,10 +1,10 @@
 from flask import Blueprint, request, abort, Response
-from werkzeug.wrappers import response
 from bson import ObjectId
 
+from bpr_data.models.team import Team, TeamUser
+from bpr_data.models.response import ApiResponse
+
 from src.services import teams_service as service
-from src.models.team import Team, TeamUser
-from src.models.response import ApiResponse
 
 api = Blueprint('teams_api', __name__)
 
