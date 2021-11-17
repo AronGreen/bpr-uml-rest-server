@@ -4,17 +4,26 @@ from bson import ObjectId
 from flask import g, abort
 from flask.wrappers import Response
 
-from src.models.invitation import Invitation
-from src.models.project import Project
-from src.models.user import User
-from src.models.workspace import Workspace
-import src.repository as db
+from bpr_data.repository import Repository, Collection
+from bpr_data.models.invitation import Invitation
+from bpr_data.models.project import Project
+from bpr_data.models.user import User
+from bpr_data.models.workspace import Workspace
+
 import src.util.email_utils as email
 import src.services.email_service as email_service
 import src.services.users_service as users_service
 import src.services.invitation_service as invitation_service
+import settings
 
-collection = db.Collection.WORKSPACE
+db = Repository.get_instance(
+    protocol=settings.MONGO_PROTOCOL,
+    default_db=settings.MONGO_DEFAULT_DB,
+    pw=settings.MONGO_PW,
+    host=settings.MONGO_HOST,
+    user=settings.MONGO_USER)
+
+collection = Collection.WORKSPACE
 
 
 def create_workspace(workspace: Workspace) -> Workspace:
@@ -29,6 +38,7 @@ def get_workspace(workspace_id: ObjectId) -> Workspace:
     find_result = db.find_one(collection, _id=workspace_id)
     if find_result is not None:
         return Workspace.from_dict(find_result)
+
 
 def get_user_workspaces(firebase_id: str) -> list:
     # TODO: filter so only current users workspaces are present
@@ -87,7 +97,7 @@ def respond_to_invitation(invitation_id: str | ObjectId, accepted: bool) -> str:
 def add_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) -> bool:
     if not are_users_in_workspace(ObjectId(workspace_id), [ObjectId(user_id)]):
         return db.push(
-            collection=db.Collection.WORKSPACE,
+            collection=Collection.WORKSPACE,
             document_id=workspace_id,
             field_name='users',
             item=user_id
@@ -96,7 +106,7 @@ def add_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) ->
 
 def remove_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) -> bool:
     return db.pull(
-        collection=db.Collection.WORKSPACE,
+        collection=Collection.WORKSPACE,
         document_id=workspace_id,
         field_name='users',
         item=user_id
@@ -117,6 +127,7 @@ def is_user_in_workspace(workspace_id: ObjectId, user_id: ObjectId):
     if user_id in workspace.users:
         return True
     return False
+
 
 def are_users_in_workspace(workspace_id: ObjectId, user_ids: list):
     workspace = db.find_one(collection, _id=workspace_id)

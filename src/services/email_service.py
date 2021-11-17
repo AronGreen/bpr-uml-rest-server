@@ -1,8 +1,10 @@
 import smtplib
 import ssl
-import settings as settings
+
+from bpr_data.models.response import ApiResponse
+
 import src.services.log_service as log
-from src.models.response import ApiResponse
+import settings
 
 # TODO: move to env
 smtp_server = "smtp.gmail.com"

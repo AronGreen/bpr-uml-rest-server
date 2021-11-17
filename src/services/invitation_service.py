@@ -1,13 +1,21 @@
 from __future__ import annotations
-
 from bson import ObjectId
 
-from src.models.invitation import Invitation, InvitationGetModel
+from bpr_data.repository import Repository, Collection
+from bpr_data.models.invitation import Invitation, InvitationGetModel
+
 import src.services.workspace_service as workspace_service
 import src.services.users_service as users_service
-import src.repository as db
+import settings
 
-collection = db.Collection.INVITATION
+db = Repository.get_instance(
+    protocol=settings.MONGO_PROTOCOL,
+    default_db=settings.MONGO_DEFAULT_DB,
+    pw=settings.MONGO_PW,
+    host=settings.MONGO_HOST,
+    user=settings.MONGO_USER)
+
+collection = Collection.INVITATION
 
 
 def add_invitation(invitation: Invitation) -> Invitation:
@@ -33,6 +41,7 @@ def get_invitation(workspace_id: ObjectId, invitee_email_address: str) -> Invita
     if invitation is not None:
         return Invitation.from_dict(invitation)
 
+
 def get_workspace_invitations_for_user(email: str) -> list:
     find_result = db.find(collection=collection, inviteeEmailAddress=email)
     if find_result is not None:
@@ -42,9 +51,10 @@ def get_workspace_invitations_for_user(email: str) -> list:
             invitation_get_models.append(get_invitation_get_model(invitation))
         return invitation_get_models
 
+
 def get_invitation_get_model(invitation: Invitation):
-    workspace=workspace_service.get_workspace(invitation.workspaceId)
-    user=users_service.get_user(invitation.inviterId)
+    workspace = workspace_service.get_workspace(invitation.workspaceId)
+    user = users_service.get_user(invitation.inviterId)
     return InvitationGetModel(
         _id=invitation._id,
         inviterId=invitation.inviterId,

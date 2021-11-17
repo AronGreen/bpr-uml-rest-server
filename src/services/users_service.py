@@ -1,14 +1,23 @@
 from bson import ObjectId
 
-from src.models.invitation import Invitation
+from bpr_data.models.invitation import Invitation
+from bpr_data.repository import Repository, Collection
+from bpr_data.models.team import Team
+from bpr_data.models.user import User
+
 import src.util.email_utils as email_utils
 import src.services.email_service as email_service
 import src.services.workspace_service as workspace_service
-import src.repository as db
-from src.models.team import Team
-from src.models.user import User
+import settings
 
-collection = db.Collection.USER
+db = Repository.get_instance(
+    protocol=settings.MONGO_PROTOCOL,
+    default_db=settings.MONGO_DEFAULT_DB,
+    pw=settings.MONGO_PW,
+    host=settings.MONGO_HOST,
+    user=settings.MONGO_USER)
+
+collection = Collection.USER
 
 
 def invite_user(invitation: Invitation) -> str:
@@ -32,14 +41,14 @@ def get_user_name(userId: str) -> str:
 
 
 def add_user(user: User) -> User:
-     # TODO: Check if user already exists.
+    # TODO: Check if user already exists.
     inserted = db.insert(collection, user)
     if inserted is not None:
         return User.from_dict(inserted)
 
 
 def get_teams_for_user(user_id: str) -> list:
-    find_result = db.find(db.Collection.TEAM, firebaseId=user_id)
+    find_result = db.find(Collection.TEAM, firebaseId=user_id)
     if find_result is not None:
         return Team.from_dict_list(find_result)
 

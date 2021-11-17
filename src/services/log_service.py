@@ -1,8 +1,17 @@
 from enum import Enum
 from datetime import datetime
 
-import src.repository as db
-from src.models.log_item import LogItem
+from bpr_data.repository import Repository, Collection
+from bpr_data.models.log_item import LogItem
+
+import settings
+
+db = Repository.get_instance(
+    protocol=settings.MONGO_PROTOCOL,
+    default_db=settings.MONGO_DEFAULT_DB,
+    pw=settings.MONGO_PW,
+    host=settings.MONGO_HOST,
+    user=settings.MONGO_USER)
 
 
 class LogLevel(Enum):
@@ -33,4 +42,4 @@ def log(content, note: str, log_level: LogLevel) -> None:
         logLevel=repr(log_level),
         note=note,
         content=repr(content))
-    db.insert(db.Collection.APPLICATION_LOG, item)
+    db.insert(Collection.APPLICATION_LOG, item)

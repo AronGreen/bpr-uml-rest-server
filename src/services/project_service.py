@@ -1,15 +1,23 @@
 from __future__ import annotations
 from flask import abort
-from src.util import list_util
-
 from bson import ObjectId
 
-import src.repository as db
-from src.models.project import Project, ProjectUser
+from bpr_data.repository import Repository, Collection
+from bpr_data.models.project import Project, ProjectUser
+
+from src.util import list_util
 import src.services.workspace_service as workspace_service
 import src.services.users_service as users_service
+import settings
 
-collection = db.Collection.PROJECT
+db = Repository.get_instance(
+    protocol=settings.MONGO_PROTOCOL,
+    default_db=settings.MONGO_DEFAULT_DB,
+    pw=settings.MONGO_PW,
+    host=settings.MONGO_HOST,
+    user=settings.MONGO_USER)
+
+collection = Collection.PROJECT
 
 
 def get(project_id: str) -> Project:
