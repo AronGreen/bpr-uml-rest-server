@@ -79,11 +79,7 @@ def add_users(projectId: str):
       - projects
     parameters:
       - in: body
-        name: body
         schema:
-          required:
-            - userId
-            - isEditor
           properties:
             userId:
               type: string
@@ -103,6 +99,44 @@ def add_users(projectId: str):
             project_id=projectId,
             users=ProjectUser.to_object_ids("userId", ProjectUser.from_dict_list(request_data['users']))
         )
+        return Response(result.as_json(), mimetype="application/json")
+    except KeyError:
+        abort(400, "Insufficient data in request body")
+
+
+@api.route("/<projectId>/users", methods=['PUT'])
+def replace_users(projectId: str):
+    """
+    Replace all users in project
+    ---
+    tags:
+      - projects
+    parameters:
+      - in: path
+        name: projectId
+        required: true
+      - in: body
+        name: body
+        schema:
+          properties:
+            users:
+              type: array
+              items:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                  isEditor:
+                    type: string
+    responses:
+      200:
+        description: project with updated list
+      400:
+         description: Insufficient data in request
+   """
+    request_data = request.get_json()
+    try:
+        result = project_service.replace_users(projectId, request_data)
         return Response(result.as_json(), mimetype="application/json")
     except KeyError:
         abort(400, "Insufficient data in request body")

@@ -81,3 +81,13 @@ def add_users(project_id: str, users: list) -> Project:
 def get_user_projects(workspace_id: str, user_id: ObjectId) -> list:
     return Project.from_dict_list(
         db.find(collection=collection, nested_conditions={'users.userId': user_id}, workspaceId=ObjectId(workspace_id)))
+
+
+def replace_users(project_id: str | ObjectId, users: list) -> Project:
+    project = get(project_id=project_id)
+    project_users = ProjectUser.from_dict_list(users)
+    project.users = project_users
+    updated = db.update(Collection.PROJECT, project)
+    if updated is not None:
+        return Project.from_dict(updated)
+
