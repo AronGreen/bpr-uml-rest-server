@@ -33,8 +33,8 @@ def get_for_workspace(workspace_id: ObjectId) -> Project:
     if find_result is not None:
         projects = Project.from_dict_list(find_result)
         for project in projects:
-           project.users = ProjectUser.from_dict_list(project.users)
-        return project 
+            project.users = ProjectUser.from_dict_list(project.users)
+        return projects
 
 
 def create_project(title: str, workspaceId: ObjectId, creator_firebase_id: str) -> Project:
@@ -66,7 +66,8 @@ def delete_project(project_id: str | ObjectId) -> bool:
 def add_users(project_id: str, users: list) -> Project:
     project = get(project_id=project_id)
     list_util.ensure_no_duplicates(users, "userId")
-    if not workspace_service.are_users_in_workspace(workspace_id=project.workspaceId, user_ids=[user.userId for user in users]):
+    if not workspace_service.are_users_in_workspace(workspace_id=project.workspaceId,
+                                                    user_ids=[user.userId for user in users]):
         abort(400)
     for user in users:
         for project_user in project.users:
@@ -78,4 +79,5 @@ def add_users(project_id: str, users: list) -> Project:
 
 
 def get_user_projects(workspace_id: str, user_id: ObjectId) -> list:
-    return Project.from_dict_list(db.find(collection=collection, nested_conditions={'users.userId': user_id}, workspaceId=ObjectId(workspace_id)))
+    return Project.from_dict_list(
+        db.find(collection=collection, nested_conditions={'users.userId': user_id}, workspaceId=ObjectId(workspace_id)))

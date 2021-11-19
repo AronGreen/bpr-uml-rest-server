@@ -46,6 +46,30 @@ def create_project():
         abort(400, "Insufficient data in request")
 
 
+@api.route("/<projectId>", methods=['GET'])
+def get_project(projectId: str):
+    """
+    Get a project by id
+    ---
+    tags:
+      - projects
+    parameters:
+      - in: path
+        name: projectId
+        required: true
+    responses:
+      200:
+        description: project data
+      404:
+         description: Project not found
+    """
+    try:
+        result = project_service.get(project_id=projectId)
+        return Response(result.as_json(), mimetype="application/json")
+    except KeyError:
+        abort(404, "Project not found")
+
+
 @api.route("/<projectId>/users", methods=['POST'])
 def add_users(projectId: str):
     """
@@ -78,7 +102,7 @@ def add_users(projectId: str):
         result = project_service.add_users(
             project_id=projectId,
             users=ProjectUser.to_object_ids("userId", ProjectUser.from_dict_list(request_data['users']))
-            )
+        )
         return Response(result.as_json(), mimetype="application/json")
     except KeyError:
         abort(400, "Insufficient data in request body")
