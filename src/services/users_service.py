@@ -10,12 +10,7 @@ import src.services.email_service as email_service
 import src.services.workspace_service as workspace_service
 import settings
 
-db = Repository.get_instance(
-    protocol=settings.MONGO_PROTOCOL,
-    default_db=settings.MONGO_DEFAULT_DB,
-    pw=settings.MONGO_PW,
-    host=settings.MONGO_HOST,
-    user=settings.MONGO_USER)
+db = Repository.get_instance(**settings.MONGO_CONN)
 
 collection = Collection.USER
 

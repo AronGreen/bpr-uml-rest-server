@@ -10,12 +10,7 @@ import src.services.invitation_service
 import endpoint_test_util as util
 import settings
 
-repo = Repository.get_instance(
-    protocol=settings.MONGO_PROTOCOL,
-    default_db=settings.MONGO_DEFAULT_DB,
-    pw=settings.MONGO_PW,
-    host=settings.MONGO_HOST,
-    user=settings.MONGO_USER)
+repo = Repository.get_instance(**settings.MONGO_CONN)
 
 created_resources = []
 port_no = str(settings.APP_PORT)

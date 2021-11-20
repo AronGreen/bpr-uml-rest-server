@@ -14,18 +14,13 @@ import src.services.users_service as users_service
 import src.services.invitation_service as invitation_service
 import settings
 
-db = Repository.get_instance(
-    protocol=settings.MONGO_PROTOCOL,
-    default_db=settings.MONGO_DEFAULT_DB,
-    pw=settings.MONGO_PW,
-    host=settings.MONGO_HOST,
-    user=settings.MONGO_USER)
+db = Repository.get_instance(**settings.MONGO_CONN)
 
 collection = Collection.WORKSPACE
 
 
 def create_workspace(workspace: Workspace) -> Workspace:
-    creator = User.from_dict(db.find_one(db.Collection.USER, firebaseId=g.firebase_id))
+    creator = User.from_dict(db.find_one(Collection.USER, firebaseId=g.firebase_id))
     workspace.users = [creator.id]
     created_workspace = db.insert(collection, workspace)
     if created_workspace is not None:

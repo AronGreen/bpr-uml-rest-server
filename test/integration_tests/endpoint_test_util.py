@@ -11,12 +11,7 @@ import src.services.workspace_service as workspace_service
 import src.services.invitation_service as invitation_service
 import settings
 
-repo = Repository.get_instance(
-    protocol=settings.MONGO_PROTOCOL,
-    default_db=settings.MONGO_DEFAULT_DB,
-    pw=settings.MONGO_PW,
-    host=settings.MONGO_HOST,
-    user=settings.MONGO_USER)
+repo = Repository.get_instance(**settings.MONGO_CONN)
 
 port_no = str(settings.APP_PORT)
 port_no = str(5000)
