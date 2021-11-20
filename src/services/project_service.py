@@ -21,11 +21,12 @@ collection = Collection.PROJECT
 
 
 def get(project_id: str) -> Project:
-    find_result = db.find_one(collection, id=project_id)
-    if find_result is not None:
-        project = Project.from_dict(find_result)
-        project.users = ProjectUser.from_dict_list(project.users)
-        return project
+    # find_result = db.find_one(collection, id=project_id)
+    # if find_result is not None:
+    #     project = Project.from_dict(find_result)
+    #     project.users = ProjectUser.from_dict_list(project.users)
+    #     return project
+    return __get_full_project(project_id)
 
 
 def get_for_workspace(workspace_id: ObjectId) -> Project:
@@ -85,9 +86,57 @@ def get_user_projects(workspace_id: str, user_id: ObjectId) -> list:
 
 def replace_users(project_id: str | ObjectId, users: list) -> Project:
     project = get(project_id=project_id)
+    for user in users:
+        user['userId'] = ObjectId(user['userId'])
     project_users = ProjectUser.from_dict_list(users)
     project.users = project_users
-    updated = db.update(Collection.PROJECT, project)
-    if updated is not None:
-        return Project.from_dict(updated)
+    db.update(Collection.PROJECT, project)
+    return __get_full_project(project_id)
 
+
+def __get_full_project(project_id: str | ObjectId) -> Project:
+    result = db.aggregate(Collection.PROJECT, [
+        {'$match': {'_id': ObjectId(project_id)}},
+        __make_unwind_step('$users'),
+        __make_unwind_step('$teams'),
+        {
+            '$lookup': {
+                'from': 'user',
+                'localField': 'users.userId',
+                'foreignField': '_id',
+                'as': 'users.user'
+            }
+        },
+        {
+            '$lookup': {
+                'from': 'team',
+                'localField': 'teams.teamId',
+                'foreignField': '_id',
+                'as': 'teams.team'
+            }
+        },
+        __make_unwind_step('$users'),
+        __make_unwind_step('$teams'),
+        {'$group': {
+            '_id': '$_id',
+            'title': {'$first': '$title'},
+            'workspaceId': {'$first': '$workspaceId'},
+            'users': {'$addToSet': '$users'},
+            'teams': {'$addToSet': '$teams'}
+        }}
+    ])
+
+    lst = list(result)
+    if len(lst) > 0:
+        return Project.from_dict(lst[0])
+
+
+# TODO: move to util module in bpr_data?
+def __make_unwind_step(path: str, preserve_null_and_empty_arrays: bool = True) -> dict:
+    return {
+        '$unwind':
+            {
+                'path': path,
+                'preserveNullAndEmptyArrays': preserve_null_and_empty_arrays
+            }
+    }

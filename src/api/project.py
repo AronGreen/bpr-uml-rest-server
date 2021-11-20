@@ -1,5 +1,5 @@
-from flask import Blueprint, g, request, abort, Response
 from bpr_data.models.project import ProjectUser
+from flask import Blueprint, g, request, abort, Response
 
 from src.services import project_service
 
