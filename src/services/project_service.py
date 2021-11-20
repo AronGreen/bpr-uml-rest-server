@@ -115,8 +115,8 @@ def __get_full_project(project_id: str | ObjectId) -> Project:
                 'as': 'teams.team'
             }
         },
-        __make_unwind_step('$users'),
-        __make_unwind_step('$teams'),
+        __make_unwind_step('$users.user'),
+        __make_unwind_step('$teams.team'),
         {'$group': {
             '_id': '$_id',
             'title': {'$first': '$title'},
