@@ -90,7 +90,7 @@ def replace_users(project_id: str | ObjectId, users: list) -> Project:
 
 
 def __get_full_project(project_id: str | ObjectId) -> Project:
-    result = db.aggregate(Collection.PROJECT, [
+    pipeline = [
         {'$match': {'_id': ObjectId(project_id)}},
         __make_unwind_step('$users'),
         __make_unwind_step('$teams'),
@@ -119,11 +119,12 @@ def __get_full_project(project_id: str | ObjectId) -> Project:
             'users': {'$addToSet': '$users'},
             'teams': {'$addToSet': '$teams'}
         }}
-    ])
-
-    lst = list(result)
-    if len(lst) > 0:
-        return Project.from_dict(lst[0])
+    ]
+    results = db.aggregate(collection=Collection.PROJECT,
+                           pipeline=pipeline,
+                           return_type=Project)
+    if len(results) > 0:
+        return results[0]
 
 
 # TODO: move to util module in bpr_data?

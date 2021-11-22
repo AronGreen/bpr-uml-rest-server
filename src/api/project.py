@@ -66,7 +66,7 @@ def get_project(projectId: str):
     try:
         result = project_service.get(project_id=projectId)
         return Response(result.as_json(), mimetype="application/json")
-    except KeyError:
+    except AttributeError:
         abort(404, "Project not found")
 
 
@@ -140,3 +140,6 @@ def replace_users(projectId: str):
         return Response(result.as_json(), mimetype="application/json")
     except KeyError:
         abort(400, "Insufficient data in request body")
+    except AttributeError:
+        abort(404, "Project not found")
+
