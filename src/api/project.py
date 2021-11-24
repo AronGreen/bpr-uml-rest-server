@@ -148,6 +148,34 @@ def replace_users(projectId: str):
 
 @api.route("/<projectId>/teams", methods=['PUT'])
 def replace_teams(projectId: str):
+  """
+    Replace all teams in project
+    ---
+    tags:
+      - projects
+    parameters:
+      - in: path
+        name: projectId
+        required: true
+      - in: body
+        name: body
+        schema:
+          properties:
+            teams:
+              type: array
+              items:
+                type: object
+                properties:
+                  teamId:
+                    type: string
+                  isEditor:
+                    type: boolean
+    responses:
+      200:
+        description: project with updated list
+      400:
+         description: Insufficient data in request
+   """
   request_data = request.get_json()
   try:
     result = project_service.replace_teams(
