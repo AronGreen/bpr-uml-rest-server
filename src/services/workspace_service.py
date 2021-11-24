@@ -131,3 +131,13 @@ def are_users_in_workspace(workspace_id: ObjectId, user_ids: list):
             return True
         else:
             return False
+
+def are_teams_in_workspace(workspace_id: ObjectId, team_ids: list):
+    workspace = db.find_one(collection, _id=workspace_id)
+    if workspace is not None:
+        workspace = Workspace.from_dict(workspace)
+    for team_id in team_ids:
+        if team_id in workspace.teams:
+            return True
+        else:
+            return False

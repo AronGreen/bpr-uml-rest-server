@@ -152,7 +152,7 @@ def replace_teams(projectId: str):
   try:
     result = project_service.replace_teams(
     project_id=projectId,
-    teams=ProjectTeam.to_object_ids("userId", ProjectUser.from_dict_list(request_data['teams']))
+    teams=ProjectTeam.to_object_ids("teamId", ProjectTeam.from_dict_list(request_data['teams']))
     )
     return Response(result.as_json(), mimetype="application/json")
   except KeyError:
