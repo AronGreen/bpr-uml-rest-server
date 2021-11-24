@@ -20,7 +20,7 @@ def get(project_id: str) -> Project:
     if find_result is not None:
         project = Project.from_dict(find_result)
         project.users = ProjectUser.from_dict_list(project.users)
-        project.teams = ProjectTeam.from_dict_list(project.users)
+        project.teams = ProjectTeam.from_dict_list(project.teams)
         return project
 
 

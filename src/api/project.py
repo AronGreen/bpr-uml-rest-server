@@ -70,7 +70,7 @@ def get_project(projectId: str):
         abort(404, "Project not found")
 
 
-@api.route("/<projectId>/users", methods=['POST'])
+# @api.route("/<projectId>/users", methods=['POST'])
 def add_users(projectId: str):
     """
     Add a user to project
@@ -104,7 +104,7 @@ def add_users(projectId: str):
         abort(400, "Insufficient data in request body")
 
 
-@api.route("/<projectId>/users", methods=['POST'])
+@api.route("/<projectId>/users", methods=['PUT'])
 def replace_users(projectId: str):
     """
     Replace all users in project
@@ -146,7 +146,7 @@ def replace_users(projectId: str):
     except AttributeError:
         abort(404, "Project not found")
 
-@api.route("/<projectId>/teams", methods=['POST'])
+@api.route("/<projectId>/teams", methods=['PUT'])
 def replace_teams(projectId: str):
   """
     Replace all teams in project

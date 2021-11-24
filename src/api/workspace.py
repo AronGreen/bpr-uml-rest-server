@@ -310,3 +310,22 @@ def respond_to_invitation():
         accepted = request_data['accepted']
         return Response(status=200, response=ApiResponse(response=workspace_service.respond_to_invitation(invitation_id, accepted)))
     return Response(status=400, response=ApiResponse(response="Insufficient data").as_json())
+
+@api.route("/<workspaceId>/teams", methods=['GET'])
+def get_workspace_team(workspaceId: str):
+    """
+      Get the teams inside a workspace
+      ---
+      tags:
+        - workspaces
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+      responses:
+        200:
+          description: teams
+        404:
+          description: workspace not found
+      """
+    return Response(status=200, response=ApiResponse(response=workspace_service.get_teams(workspaceId)))

@@ -141,3 +141,6 @@ def are_teams_in_workspace(workspace_id: ObjectId, team_ids: list):
             return True
         else:
             return False
+
+def get_teams(workspace_id: str):
+    return ""
