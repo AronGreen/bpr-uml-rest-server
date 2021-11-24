@@ -94,6 +94,39 @@ def add_users():
         return Response(result.as_json(), mimetype="application/json")
     abort(400)
 
+@api.route("/<teamId>/users", methods=['PUT'])
+def replace_users(teamId):
+    """
+      Replace the users of team
+      ---
+      tags:
+        - teams
+      parameters:
+        - in: path
+          name: teamId
+          required: true
+        - in: body
+          name: body
+        schema:
+          properties:
+            users:
+              type: array
+              items:
+                type: object
+                properties:
+                  userId:
+                    type: string
+      responses:
+        200:
+          description: Users updated
+          schema:
+            type: object
+        404:
+          description: Team not found
+      """
+    request_data = request.get_json()
+    result = service.replace_users(teamId, TeamUser.to_object_ids("userId", TeamUser.from_json_list(request_data['users'])))
+    return Response(result.as_json(), mimetype="application/json")
 
 @api.route("/users", methods=['DELETE'])
 def remove_user():

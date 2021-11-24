@@ -38,6 +38,17 @@ def add_users(team_id: str, team_users: list) -> Team:
     db.push_list(collection=collection, document_id=team._id, field_name='users', items=items)
     return get_team(team_id=team._id)
 
+def replace_users(team_id: str, team_users: list) -> Team:
+    team = get_team(ObjectId(team_id))
+    if team is None:
+        abort(404, description="Team not found")
+    list_util.ensure_no_duplicates(team_users, "userId")
+    if not workspace_service.are_users_in_workspace(workspace_id=team.workspaceId,
+                                                    user_ids=[user.userId for user in team_users]):
+        abort(400)
+    team.users = team_users
+    db.update(Collection.TEAM, team)
+    return get_team_with_user_details(team_id)
 
 def get_team(team_id: ObjectId):
     find_result = db.find_one(collection=collection, _id=team_id)
@@ -49,3 +60,38 @@ def get_team(team_id: ObjectId):
 
 def remove_user(team_id: str, user_id: str) -> bool:
     return db.pull(collection, ObjectId(team_id), 'users', ObjectId(user_id))
+
+def get_team_with_user_details(team_id: str) -> Team:
+    pipeline = [
+        {'$match': {'_id': ObjectId(team_id)}},
+        __make_unwind_step('$users'),
+        {
+            '$lookup': {
+                'from': 'user',
+                'localField': 'users.userId',
+                'foreignField': '_id',
+                'as': 'users.user'
+            }
+        },
+        __make_unwind_step('$users.user'),
+        {'$group': {
+            '_id': '$_id',
+            'name': {'$first': '$name'},
+            'workspaceId': {'$first': '$workspaceId'},
+            'users': {'$addToSet': '$users'}
+        }}
+    ]
+    results = db.aggregate(collection=Collection.TEAM,
+                           pipeline=pipeline,
+                           return_type=Team)
+    if len(results) > 0:
+        return results[0]
+
+def __make_unwind_step(path: str, preserve_null_and_empty_arrays: bool = True) -> dict:
+    return {
+        '$unwind':
+            {
+                'path': path,
+                'preserveNullAndEmptyArrays': preserve_null_and_empty_arrays
+            }
+    }

@@ -3,6 +3,7 @@ import requests
 from bson import ObjectId
 
 from bpr_data.models.workspace import Workspace
+from bpr_data.models.user import User
 from bpr_data.models.project import Project, ProjectUser
 from bpr_data.repository import Repository, Collection
 
@@ -161,3 +162,19 @@ def test_add_existing_user_to_project(create_projects_fixture):
     assert len(project.users) == 1
     assert project.users[0].isEditor == True
     assert project.users[0].userId == ObjectId(user._id)
+
+def test_replace_users_in_project(create_workspace_with_users_and_projects_fixture):
+    user_1 = ProjectUser(userId=str(create_workspace_with_users_and_projects_fixture["users"][0].id), isEditor=True)
+
+    request_body = {
+        "users": ProjectUser.as_dict_list([user_1])
+    }
+
+    response = requests.put(url=base_url + "/projects/" + str(
+        create_workspace_with_users_and_projects_fixture["projects"][0].id) + "/users", json=request_body,
+                             headers={"Authorization": token})
+    assert response.status_code == 200
+
+    result = Project.from_json(response.content.decode())
+    users_dict = result.users
+    assert len(result.users) == 1

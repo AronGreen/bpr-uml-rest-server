@@ -5,7 +5,7 @@ from bpr_data.models.user import User
 from bpr_data.models.workspace import Workspace
 from bpr_data.models.invitation import Invitation
 from bpr_data.models.project import Project
-from bpr_data.models.team import Team
+from bpr_data.models.team import Team, TeamUser
 
 import src.services.workspace_service as workspace_service
 import src.services.invitation_service as invitation_service
@@ -82,6 +82,17 @@ def create_team_fixture(token: str, workspaceId: str):
     created_resources.append({Collection.TEAM: team._id})
     return team
 
+def add_users_to_team(token: str, team_id: str, users: list):
+    user_1 = TeamUser(userId=users[0].id)
+    user_2 = TeamUser(userId=users[1].id)
+
+    request_body = {
+        "users": TeamUser.as_json_list([user_1, user_2]),
+        "teamId": team_id
+    }
+
+    requests.post(url=base_url + "/teams/users", json=request_body, headers={"Authorization": token})
+
 
 def create_dummy_users_fixture():
     new_token_1 = get_token_fixture(settings.TEST_EMAIL_1, settings.TEST_PASSWORD_1)
@@ -135,19 +146,22 @@ def create_workspace_with_users_fixture(token: str):
         "users": users
     }
 
+def create_workspace_with_users_and_empty_team_fixture(token: str):
+    workspace_with_users = create_workspace_with_users_fixture(token)
+    team = create_team_fixture(token, str(workspace_with_users["workspace"].id))
+    workspace_with_users["team"] = team
+    return workspace_with_users
 
 def create_workspace_with_users_and_team_fixture(token: str):
     workspace_with_users = create_workspace_with_users_fixture(token)
     team = create_team_fixture(token, str(workspace_with_users["workspace"].id))
+    add_users_to_team(token, team_id=str(team.id), users=workspace_with_users["users"])
     workspace_with_users["team"] = team
     return workspace_with_users
 
 
 def create_workspace_with_users_and_projects_fixture(token: str):
     workspace_with_users = create_workspace_with_users_fixture(token)
-    # workspace = create_workspace_fixture(token)
-    # users = create_dummy_users_fixture()
-    # add_users_to_workspace_fixture(workspace_id=workspace.id, users=users)
     workspace_projects = create_projects_fixture(workspace_id=str(workspace_with_users["workspace"].id), token=token)
     workspace_with_users["projects"] = workspace_projects
     return workspace_with_users

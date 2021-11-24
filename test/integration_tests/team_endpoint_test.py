@@ -28,6 +28,10 @@ def create_workspace_fixture():
 
 
 @pytest.fixture
+def create_workspace_with_users_and_empty_team_fixture():
+    return util.create_workspace_with_users_and_empty_team_fixture(token)
+
+@pytest.fixture
 def create_workspace_with_users_and_team_fixture():
     return util.create_workspace_with_users_and_team_fixture(token)
 
@@ -48,13 +52,13 @@ def test_create_team(create_workspace_fixture):
     created_resources.append({Collection.TEAM: team._id})
 
 
-def test_add_users_to_team(create_workspace_with_users_and_team_fixture):
-    user_1 = TeamUser(userId=create_workspace_with_users_and_team_fixture["users"][0].id)
-    user_2 = TeamUser(userId=create_workspace_with_users_and_team_fixture["users"][1].id)
+def test_add_users_to_team(create_workspace_with_users_and_empty_team_fixture):
+    user_1 = TeamUser(userId=create_workspace_with_users_and_empty_team_fixture["users"][0].id)
+    user_2 = TeamUser(userId=create_workspace_with_users_and_empty_team_fixture["users"][1].id)
 
     request_body = {
         "users": TeamUser.as_json_list([user_1, user_2]),
-        "teamId": str(create_workspace_with_users_and_team_fixture["team"].id)
+        "teamId": str(create_workspace_with_users_and_empty_team_fixture["team"].id)
     }
 
     response = requests.post(url=base_url + "/teams/users", json=request_body, headers={"Authorization": token})
@@ -64,3 +68,17 @@ def test_add_users_to_team(create_workspace_with_users_and_team_fixture):
     assert len(result.users) == 2
     assert str(user_1.userId) in [user.userId for user in result.users]
     assert str(user_2.userId) in [user.userId for user in result.users]
+
+def test_replace_users_in_team(create_workspace_with_users_and_team_fixture):
+    user_1 = TeamUser(userId=create_workspace_with_users_and_team_fixture["users"][0].id)
+
+    request_body = {
+        "users": TeamUser.as_json_list([user_1])
+    }
+
+    response = requests.put(url=base_url + "/teams/" + str(create_workspace_with_users_and_team_fixture["team"].id) + "/users", json=request_body, headers={"Authorization": token})
+    assert response.status_code == 200
+    result = Team.from_json(response.content.decode())
+    result.users = TeamUser.from_dict_list(result.users)
+    assert len(result.users) == 1
+    assert str(user_1.userId) in [user.userId for user in result.users]

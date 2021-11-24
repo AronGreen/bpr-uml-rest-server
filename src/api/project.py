@@ -70,7 +70,7 @@ def get_project(projectId: str):
         abort(404, "Project not found")
 
 
-# @api.route("/<projectId>/users", methods=['POST'])
+@api.route("/<projectId>/users", methods=['POST'])
 def add_users(projectId: str):
     """
     Add a user to project
