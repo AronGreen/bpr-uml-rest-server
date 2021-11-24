@@ -4,6 +4,7 @@ from flask.wrappers import Response
 
 from bpr_data.models.invitation import Invitation
 from bpr_data.models.user import User
+from bpr_data.models.team import Team
 from bpr_data.models.workspace import Workspace
 from bpr_data.models.response import ApiResponse
 
@@ -328,4 +329,4 @@ def get_workspace_team(workspaceId: str):
         404:
           description: workspace not found
       """
-    return Response(status=200, response=ApiResponse(response=workspace_service.get_teams(workspaceId)))
+    return Response(status=200, response=Team.as_json_list(workspace_service.get_teams(workspaceId)), mimetype="application/json")
