@@ -87,10 +87,10 @@ def replace_users(project_id: str | ObjectId, users: list) -> Project:
         abort(400)
     project.users = users
     db.update(Collection.PROJECT, project)
-    return __get_full_project(project_id)
+    return get_full_project(project_id)
 
 
-def __get_full_project(project_id: str | ObjectId) -> Project:
+def get_full_project(project_id: str | ObjectId) -> Project:
     pipeline = [
         {'$match': {'_id': ObjectId(project_id)}},
         __make_unwind_step('$users'),
@@ -146,4 +146,4 @@ def replace_teams(project_id: str | ObjectId, teams: list) -> Project:
         abort(400)
     project.teams = teams
     db.update(Collection.PROJECT, project)
-    return __get_full_project(project_id)
+    return get_full_project(project_id)

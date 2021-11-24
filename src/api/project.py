@@ -64,7 +64,7 @@ def get_project(projectId: str):
          description: Project not found
     """
     try:
-        result = project_service.get(project_id=projectId)
+        result = project_service.get_full_project(project_id=projectId)
         return Response(result.as_json(), mimetype="application/json")
     except AttributeError:
         abort(404, "Project not found")
