@@ -41,7 +41,7 @@ def create_team():
               workspaceId:
                 type: str
                 example: '61901338d13eab96f1e5d153'
-              teamName:
+              name:
                 type: string
               users:
                 type: array

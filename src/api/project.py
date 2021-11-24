@@ -1,4 +1,4 @@
-from bpr_data.models.project import ProjectUser
+from bpr_data.models.project import ProjectUser, ProjectTeam
 from flask import Blueprint, g, request, abort, Response
 
 from src.services import project_service
@@ -136,10 +136,24 @@ def replace_users(projectId: str):
    """
     request_data = request.get_json()
     try:
-        result = project_service.replace_users(projectId, request_data)
+        result = project_service.replace_users(
+            project_id=projectId,
+            users=ProjectUser.to_object_ids("userId", ProjectUser.from_dict_list(request_data['users']))
+            )
         return Response(result.as_json(), mimetype="application/json")
     except KeyError:
         abort(400, "Insufficient data in request body")
     except AttributeError:
         abort(404, "Project not found")
 
+@api.route("/<projectId>/teams", methods=['PUT'])
+def replace_teams(projectId: str):
+  request_data = request.get_json()
+  try:
+    result = project_service.replace_teams(
+    project_id=projectId,
+    teams=ProjectTeam.to_object_ids("userId", ProjectUser.from_dict_list(request_data['teams']))
+    )
+    return Response(result.as_json(), mimetype="application/json")
+  except KeyError:
+    abort(400, "Insufficient data in request body")

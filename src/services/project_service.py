@@ -3,7 +3,7 @@ from flask import abort
 from bson import ObjectId
 
 from bpr_data.repository import Repository, Collection
-from bpr_data.models.project import Project, ProjectUser
+from bpr_data.models.project import Project, ProjectUser, ProjectTeam
 
 from src.util import list_util
 import src.services.workspace_service as workspace_service
@@ -16,12 +16,12 @@ collection = Collection.PROJECT
 
 
 def get(project_id: str) -> Project:
-    # find_result = db.find_one(collection, id=project_id)
-    # if find_result is not None:
-    #     project = Project.from_dict(find_result)
-    #     project.users = ProjectUser.from_dict_list(project.users)
-    #     return project
-    return __get_full_project(project_id)
+    find_result = db.find_one(collection, id=project_id)
+    if find_result is not None:
+        project = Project.from_dict(find_result)
+        project.users = ProjectUser.from_dict_list(project.users)
+        project.teams = ProjectTeam.from_dict_list(project.users)
+        return project
 
 
 def get_for_workspace(workspace_id: ObjectId) -> Project:
@@ -81,10 +81,11 @@ def get_user_projects(workspace_id: str, user_id: ObjectId) -> list:
 
 def replace_users(project_id: str | ObjectId, users: list) -> Project:
     project = get(project_id=project_id)
-    for user in users:
-        user['userId'] = ObjectId(user['userId'])
-    project_users = ProjectUser.from_dict_list(users)
-    project.users = project_users
+    list_util.ensure_no_duplicates(users, "userId")
+    if not workspace_service.are_users_in_workspace(workspace_id=project.workspaceId,
+                                                    user_ids=[user.userId for user in users]):
+        abort(400)
+    project.users = users
     db.update(Collection.PROJECT, project)
     return __get_full_project(project_id)
 
@@ -136,3 +137,13 @@ def __make_unwind_step(path: str, preserve_null_and_empty_arrays: bool = True) -
                 'preserveNullAndEmptyArrays': preserve_null_and_empty_arrays
             }
     }
+
+def replace_teams(project_id: str | ObjectId, teams: list) -> Project:
+    project = get(project_id=project_id)
+    list_util.ensure_no_duplicates(teams, "teamId")
+    if not workspace_service.are_teams_in_workspace(workspace_id=project.workspaceId,
+                                                    team_ids=[team.teamId for team in teams]):
+        abort(400)
+    project.teams = teams
+    db.update(Collection.PROJECT, project)
+    return __get_full_project(project_id)
