@@ -7,6 +7,7 @@ from bpr_data.repository import Repository, Collection
 from bpr_data.models.invitation import Invitation
 from bpr_data.models.user import User
 from bpr_data.models.workspace import Workspace
+from bpr_data.models.team import Team
 
 import src.util.email_utils as email
 import src.services.email_service as email_service
@@ -143,4 +144,4 @@ def are_teams_in_workspace(workspace_id: ObjectId, team_ids: list):
             return False
 
 def get_teams(workspace_id: str):
-    return ""
+    return Team.from_dict_list(db.find(collection=Collection.TEAM, workspaceId=ObjectId(workspace_id)))
