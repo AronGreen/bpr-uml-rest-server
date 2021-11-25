@@ -309,7 +309,7 @@ def respond_to_invitation():
     if 'invitationId' in request_data and 'accepted' in request_data:
         invitation_id = request_data['invitationId']
         accepted = request_data['accepted']
-        return Response(status=200, response=ApiResponse(response=workspace_service.respond_to_invitation(invitation_id, accepted)))
+        return Response(status=200, response=ApiResponse(response=workspace_service.respond_to_invitation(invitation_id, accepted)).as_json())
     return Response(status=400, response=ApiResponse(response="Insufficient data").as_json())
 
 @api.route("/<workspaceId>/teams", methods=['GET'])

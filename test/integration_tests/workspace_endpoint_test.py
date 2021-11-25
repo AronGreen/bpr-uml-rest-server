@@ -46,6 +46,25 @@ def create_dummy_users_fixture() -> list:
 def make_user_invitations_fixture() -> list:
     return util.make_user_invitations_fixture(token, user)
 
+@pytest.fixture
+def invite_user_fixture() -> dict:
+    workspace = util.create_workspace_fixture(token)
+    user = util.create_dummy_user_with_token_fixture()
+    invitee_email_address = user["user"].email
+    request_body = {
+        "workspaceId": str(workspace.id),
+        "inviteeEmailAddress": invitee_email_address
+    }
+    response = requests.post(url=base_url + "workspaces/invitation", json=request_body,
+                             headers={"Authorization": token})
+    response = json.loads(response.content.decode())
+    created_resources.append({Collection.INVITATION: response["_id"]})
+    return {
+        "user_with_token": user,
+        "workspace_id": str(workspace.id),
+        "invitation_id": str(response["_id"])
+    }
+
 
 def test_get_workspace(create_workspace_fixture):
     response = requests.get(url=base_url + "workspaces/" + str(create_workspace_fixture._id),
@@ -133,3 +152,13 @@ def test_get_user_workspace_invitations(make_user_invitations_fixture):
             if invitations[i].workspaceId == str(workspace._id):
                 workspace_name = workspace.name
         assert invitations[i].workspaceName == workspace_name
+
+def test_respond_to_invitation(invite_user_fixture):
+    request_body = {
+        "invitationId": invite_user_fixture["invitation_id"],
+        "accepted": True
+    }
+    response = requests.post(url=base_url + 'workspaces/invitation/response', json=request_body,
+                            headers={"Authorization": invite_user_fixture["user_with_token"]["token"]})
+    print(response)
+    assert response.status_code == 200
