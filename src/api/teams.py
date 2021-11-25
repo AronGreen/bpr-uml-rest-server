@@ -107,15 +107,15 @@ def replace_users(teamId):
           required: true
         - in: body
           name: body
-        schema:
-          properties:
-            users:
-              type: array
-              items:
-                type: object
-                properties:
-                  userId:
-                    type: string
+          schema:
+            properties:
+              users:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    userId:
+                      type: string
       responses:
         200:
           description: Users updated
@@ -123,7 +123,7 @@ def replace_users(teamId):
             type: object
         404:
           description: Team not found
-      """
+    """
     request_data = request.get_json()
     result = service.replace_users(teamId, TeamUser.to_object_ids("userId", TeamUser.from_json_list(request_data['users'])))
     return Response(result.as_json(), mimetype="application/json")
