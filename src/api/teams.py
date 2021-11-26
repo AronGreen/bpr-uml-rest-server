@@ -180,7 +180,7 @@ def get_team_by_team_id(teamId: str):
           schema:
             type: object
       """
-    result = service.get_team(team_id = ObjectId(teamId))
+    result = service.get_team_with_user_details(team_id = ObjectId(teamId))
     return Response(result.as_json(), mimetype="application/json")
 
 @api.route("/<teamId>", methods=['PUT'])

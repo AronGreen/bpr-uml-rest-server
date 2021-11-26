@@ -48,7 +48,7 @@ def replace_users(team_id: str, team_users: list) -> Team:
         abort(400)
     team.users = team_users
     db.update(Collection.TEAM, team)
-    return get_team_with_user_details(team_id)
+    return get_team_with_user_details(ObjectId(team_id))
 
 def get_team(team_id: ObjectId):
     find_result = db.find_one(collection=collection, _id=team_id)
@@ -61,9 +61,9 @@ def get_team(team_id: ObjectId):
 def remove_user(team_id: str, user_id: str) -> bool:
     return db.pull(collection, ObjectId(team_id), 'users', ObjectId(user_id))
 
-def get_team_with_user_details(team_id: str) -> Team:
+def get_team_with_user_details(team_id: ObjectId) -> Team:
     pipeline = [
-        {'$match': {'_id': ObjectId(team_id)}},
+        {'$match': {'_id': team_id}},
         __make_unwind_step('$users'),
         {
             '$lookup': {
