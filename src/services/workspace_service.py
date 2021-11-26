@@ -145,3 +145,9 @@ def are_teams_in_workspace(workspace_id: ObjectId, team_ids: list):
 
 def get_teams(workspace_id: str) -> list:
     return Team.from_dict_list(db.find(collection=Collection.TEAM, workspaceId=ObjectId(workspace_id)))
+
+def update_workspace_name(workspace_id: str, name: str):
+    workspace = get_workspace(workspace_id=ObjectId(workspace_id))
+    workspace.name = name
+    db.update(collection=collection, item=workspace)
+    return get_workspace(workspace_id=ObjectId(workspace_id))

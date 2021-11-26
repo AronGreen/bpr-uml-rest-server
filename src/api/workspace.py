@@ -330,3 +330,34 @@ def get_workspace_team(workspaceId: str):
           description: workspace not found
       """
     return Response(status=200, response=Team.as_json_list(workspace_service.get_teams(workspaceId)), mimetype="application/json")
+
+
+@api.route("/<workspaceId>", methods=['PUT'])
+def update_workspace_name(workspaceId: str):
+    """
+      Update a team's name
+      ---
+      tags:
+        - workspaces
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+        - in: body
+          name: body
+          schema:
+            required:
+              - name
+            properties:
+              name:
+                type: string
+      responses:
+        200:
+          description: teams
+        404:
+          description: workspace not found
+      """
+    request_data = request.get_json()
+    if 'name' in request_data:
+        name = request_data['name']
+    return Response(status=200, response=Workspace.as_json(workspace_service.update_workspace_name(workspace_id=workspaceId, name=name)), mimetype="application/json")
