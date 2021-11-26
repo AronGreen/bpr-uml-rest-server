@@ -42,10 +42,13 @@ def replace_users(team_id: str, team_users: list) -> Team:
     team = get_team(ObjectId(team_id))
     if team is None:
         abort(404, description="Team not found")
-    list_util.ensure_no_duplicates(team_users, "userId")
-    if not workspace_service.are_users_in_workspace(workspace_id=team.workspaceId,
+        
+    if len(team_users) > 0:
+        list_util.ensure_no_duplicates(team_users, "userId")
+        if not workspace_service.are_users_in_workspace(workspace_id=team.workspaceId,
                                                     user_ids=[user.userId for user in team_users]):
-        abort(400)
+            abort(400)
+    
     team.users = team_users
     db.update(Collection.TEAM, team)
     return get_team_with_user_details(ObjectId(team_id))
