@@ -16,6 +16,15 @@ MONGO_CONN = {
     'user': os.environ['MONGO_USER']
 }
 
+MONGO_TEST_CONN = {
+    'protocol': os.environ['MONGO_PROTOCOL'],
+    'default_db': 'testing_' + os.environ['MONGO_DEFAULT_DB'],
+    'pw': os.environ['MONGO_PW'],
+    'host': os.environ['MONGO_HOST'],
+    'user': os.environ['MONGO_USER']
+}
+
+
 
 SMTP_EMAIL_ADDRESS = os.environ['SMTP_EMAIL_ADDRESS']
 SMTP_PASSWORD = os.environ['SMTP_PASSWORD']

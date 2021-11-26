@@ -11,7 +11,7 @@ import src.services.workspace_service as workspace_service
 import src.services.invitation_service as invitation_service
 import settings
 
-repo = Repository.get_instance(**settings.MONGO_CONN)
+repo = Repository.get_instance(**settings.MONGO_TEST_CONN)
 
 port_no = str(settings.APP_PORT)
 base_url = "http://" + settings.APP_HOST + ":" + port_no + "/"
@@ -23,7 +23,7 @@ def cleanup_fixture(resources: list):
     resources.extend(created_resources)
     for resource in resources:
         collection = list(resource.keys())[0]
-        repo.delete(collection, _id=resource.get(collection))
+        repo.delete(collection, id=resource.get(collection))
 
 
 def get_default_token_fixture():
