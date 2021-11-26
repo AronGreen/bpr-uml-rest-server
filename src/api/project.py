@@ -181,7 +181,7 @@ def replace_teams(projectId: str):
   request_data = request.get_json()
   try:
     result = project_service.replace_teams(
-    project_id=projectId,
+    project_id=ObjectId(projectId),
     teams=ProjectTeam.to_object_ids("teamId", ProjectTeam.from_dict_list(request_data['teams']))
     )
     return Response(result.as_json(), mimetype="application/json")

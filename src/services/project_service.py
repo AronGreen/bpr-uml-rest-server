@@ -7,6 +7,7 @@ from bpr_data.models.project import Project, ProjectUser, ProjectTeam
 
 from src.util import list_util
 import src.services.workspace_service as workspace_service
+import src.services.teams_service as teams_service
 import src.services.users_service as users_service
 import settings
 
@@ -139,12 +140,10 @@ def __make_unwind_step(path: str, preserve_null_and_empty_arrays: bool = True) -
             }
     }
 
-def replace_teams(project_id: str | ObjectId, teams: list) -> Project:
+def replace_teams(project_id: ObjectId, teams: list) -> Project:
     project = get(project_id=project_id)
     list_util.ensure_no_duplicates(teams, "teamId")
-    if not workspace_service.are_teams_in_workspace(workspace_id=project.workspaceId,
-                                                    team_ids=[team.teamId for team in teams]):
-        abort(400)
+    teams_service.check_teams_belong_to_workspace(workspace_id=project.workspaceId, team_ids=[team.teamId for team in teams])
     project.teams = teams
     db.update(Collection.PROJECT, project)
     return get_full_project(project_id)

@@ -110,3 +110,10 @@ def update_team_name(team_id: ObjectId, name: str):
 def delete_team(team_id: ObjectId):
     db.delete(collection=collection, _id=team_id)
     return "ok"
+
+def check_teams_belong_to_workspace(team_ids: list, workspace_id: ObjectId):
+    for team_id in team_ids:
+        team = Team.from_dict(db.find_one(collection=collection, _id = team_id))
+        if team.workspaceId != workspace_id:
+            abort(405)
+        
