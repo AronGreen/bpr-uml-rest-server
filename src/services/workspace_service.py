@@ -153,3 +153,7 @@ def update_workspace_name(workspace_id: str, name: str):
     workspace.name = name
     db.update(collection=collection, item=workspace)
     return get_workspace(workspace_id=ObjectId(workspace_id))
+
+def delete_workspace(workspace_id: ObjectId) -> bool:
+    db.delete(collection, id=workspace_id)
+    return "ok"

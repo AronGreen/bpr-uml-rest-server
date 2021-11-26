@@ -42,7 +42,7 @@ def replace_users(team_id: str, team_users: list) -> Team:
     team = get_team(ObjectId(team_id))
     if team is None:
         abort(404, description="Team not found")
-        
+
     if len(team_users) > 0:
         list_util.ensure_no_duplicates(team_users, "userId")
         if not workspace_service.are_users_in_workspace(workspace_id=team.workspaceId,
@@ -99,10 +99,14 @@ def __make_unwind_step(path: str, preserve_null_and_empty_arrays: bool = True) -
             }
     }
 
-def update_team_name(team_id: str, name: str):
-    team = get_team(team_id=ObjectId(team_id))
+def update_team_name(team_id: ObjectId, name: str):
+    team = get_team(team_id=team_id)
     if team is None:
         abort(404, description="Team not found")
     team.name = name
     db.update(collection=collection, item=team)
-    return get_team(team_id=ObjectId(team_id))
+    return get_team(team_id=team_id)
+
+def delete_team(team_id: ObjectId):
+    db.delete(collection=collection, _id=team_id)
+    return "ok"

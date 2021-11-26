@@ -219,3 +219,20 @@ def update_project_name(projectId: str):
         return Response(status=200, response=Project.as_json(project_service.update_project_title(project_id=projectId, title=title)), mimetype="application/json")
     else:
         return Response(status=400, response=ApiResponse(response="properties missing").as_json())
+        
+@api.route("/<projectId>", methods=['DELETE'])
+def delete_project(projectId: str):
+  """
+      Delete project
+      ---
+      tags:
+        - projects
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+      responses:
+        200:
+          description: confirmation
+      """
+  return Response(status=200, response=ApiResponse(response=project_service.delete_project(project_id=ObjectId(projectId))).as_json(), mimetype="application/json")

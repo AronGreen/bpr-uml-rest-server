@@ -211,4 +211,21 @@ def update_team_name(teamId: str):
     request_data = request.get_json()
     if 'name' in request_data:
         name = request_data['name']
-    return Response(status=200, response=Team.as_json(service.update_team_name(team_id=teamId, name=name)), mimetype="application/json")
+    return Response(status=200, response=Team.as_json(service.update_team_name(team_id=ObjectId(teamId), name=name)), mimetype="application/json")
+
+@api.route("/<teamId>", methods=['DELETE'])
+def delete_team(teamId: str):
+  """
+      Delete team
+      ---
+      tags:
+        - teams
+      parameters:
+        - in: path
+          name: teamId
+          required: true
+      responses:
+        200:
+          description: confirmation
+      """
+  return Response(status=200, response=ApiResponse(service.delete_team(team_id=ObjectId(teamId))).as_json(), mimetype="application/json")

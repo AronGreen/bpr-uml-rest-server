@@ -56,7 +56,8 @@ def update_project(project: Project) -> Project:
 
 
 def delete_project(project_id: str | ObjectId) -> bool:
-    return db.delete(collection, id=project_id)
+    db.delete(collection, id=project_id)
+    return "ok"
 
 
 def add_users(project_id: ObjectId, users: list) -> Project:

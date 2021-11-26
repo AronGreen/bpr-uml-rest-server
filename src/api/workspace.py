@@ -361,3 +361,21 @@ def update_workspace_name(workspaceId: str):
     if 'name' in request_data:
         name = request_data['name']
     return Response(status=200, response=Workspace.as_json(workspace_service.update_workspace_name(workspace_id=workspaceId, name=name)), mimetype="application/json")
+
+  
+@api.route("/<workspaceId>", methods=['DELETE'])
+def delete_workspace(workspaceId: str):
+  """
+      Delete workspace
+      ---
+      tags:
+        - workspaces
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+      responses:
+        200:
+          description: confirmation
+      """
+  return Response(status=200, response=ApiResponse(workspace_service.delete_workspace(workspace_id=ObjectId(workspaceId))).as_json(), mimetype="application/json")
