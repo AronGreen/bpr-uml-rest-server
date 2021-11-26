@@ -10,7 +10,7 @@ import src.services.invitation_service
 import endpoint_test_util as util
 import settings
 
-repo = Repository.get_instance(**settings.MONGO_CONN)
+repo = Repository.get_instance(**settings.MONGO_TEST_CONN)
 
 created_resources = []
 port_no = str(settings.APP_PORT)

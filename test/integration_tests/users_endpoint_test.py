@@ -7,7 +7,7 @@ from bpr_data.repository import Repository, Collection
 import endpoint_test_util as util
 import settings
 
-repo = Repository.get_instance(**settings.MONGO_CONN)
+repo = Repository.get_instance(**settings.MONGO_TEST_CONN)
 
 
 created_resources = []

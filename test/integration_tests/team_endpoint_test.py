@@ -5,7 +5,7 @@ from bpr_data.models.team import Team, TeamUser
 from bpr_data.repository import Repository, Collection
 import settings
 
-repo = Repository.get_instance(**settings.MONGO_CONN)
+repo = Repository.get_instance(**settings.MONGO_TEST_CONN)
 
 created_resources = []
 port_no = str(settings.APP_PORT)
