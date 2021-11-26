@@ -162,3 +162,23 @@ def remove_user():
             service.remove_user(team_id, user_id)
         return Response('{}', mimetype="application/json")
     abort(400)
+
+@api.route("/<teamId>", methods=['GET'])
+def get_team_by_team_id(teamId: str):
+    """
+      Get team by team id
+      ---
+      tags:
+        - teams
+      parameters:
+        - in: path
+          name: teamId
+          required: true
+      responses:
+        200:
+          description: User created
+          schema:
+            type: object
+      """
+    result = service.get_team(team_id = teamId)
+    return Response(result.as_json(), mimetype="application/json")
