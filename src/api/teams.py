@@ -125,7 +125,7 @@ def replace_users(teamId):
           description: Team not found
     """
     request_data = request.get_json()
-    result = service.replace_users(teamId, TeamUser.to_object_ids("userId", TeamUser.from_json_list(request_data['users'])))
+    result = service.replace_users(teamId, TeamUser.to_object_ids("userId", TeamUser.from_dict_list(request_data['users'])))
     return Response(result.as_json(), mimetype="application/json")
 
 @api.route("/users", methods=['DELETE'])

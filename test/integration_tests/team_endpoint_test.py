@@ -70,10 +70,10 @@ def test_add_users_to_team(create_workspace_with_users_and_empty_team_fixture):
     assert str(user_2.userId) in [user.userId for user in result.users]
 
 def test_replace_users_in_team(create_workspace_with_users_and_team_fixture):
-    user_1 = TeamUser(userId=create_workspace_with_users_and_team_fixture["users"][0].id)
+    user_1 = TeamUser(userId=str(create_workspace_with_users_and_team_fixture["users"][0].id))
 
     request_body = {
-        "users": TeamUser.as_json_list([user_1])
+        "users": TeamUser.as_dict_list([user_1])
     }
 
     response = requests.put(url=base_url + "/teams/" + str(create_workspace_with_users_and_team_fixture["team"].id) + "/users", json=request_body, headers={"Authorization": token})
