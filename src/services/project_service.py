@@ -15,8 +15,8 @@ db = Repository.get_instance(**settings.MONGO_CONN)
 collection = Collection.PROJECT
 
 
-def get(project_id: str) -> Project:
-    find_result = db.find_one(collection, id=project_id)
+def get(project_id: ObjectId) -> Project:
+    find_result = db.find_one(collection, _id=project_id)
     if find_result is not None:
         project = Project.from_dict(find_result)
         project.users = ProjectUser.from_dict_list(project.users)
@@ -147,3 +147,11 @@ def replace_teams(project_id: str | ObjectId, teams: list) -> Project:
     project.teams = teams
     db.update(Collection.PROJECT, project)
     return get_full_project(project_id)
+
+def update_project_title(project_id: str, title: str):
+    project = get(project_id=ObjectId(project_id))
+    if project is None:
+        abort(404, description="Project not found")
+    project.title = title
+    db.update(collection=collection, item=project)
+    return get(project_id=ObjectId(project_id))

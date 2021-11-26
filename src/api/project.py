@@ -1,6 +1,7 @@
 from bpr_data.models.project import ProjectUser, ProjectTeam
 from flask import Blueprint, g, request, abort, Response
-
+from bpr_data.models.project import Project
+from bpr_data.models.response import ApiResponse
 from src.services import project_service
 
 api = Blueprint('projects_api', __name__)
@@ -185,3 +186,35 @@ def replace_teams(projectId: str):
     return Response(result.as_json(), mimetype="application/json")
   except KeyError:
     abort(400, "Insufficient data in request body")
+    
+@api.route("/<projectId>", methods=['PUT'])
+def update_project_name(projectId: str):
+    """
+      Update a project's name
+      ---
+      tags:
+        - projects
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+        - in: body
+          name: body
+          schema:
+            required:
+              - name
+            properties:
+              name:
+                type: string
+      responses:
+        200:
+          description: project
+        404:
+          description: project not found
+      """
+    request_data = request.get_json()
+    if 'title' in request_data:
+        title = request_data['title']
+        return Response(status=200, response=Project.as_json(project_service.update_project_title(project_id=projectId, title=title)), mimetype="application/json")
+    else:
+        return Response(status=400, response=ApiResponse(response="properties missing").as_json())
