@@ -141,7 +141,7 @@ def test_add_duplicate_users_to_project(create_workspace_with_users_and_projects
                              headers={"Authorization": token})
     assert response.status_code == 400
 
-    project = project_service.get(str(create_workspace_with_users_and_projects_fixture["projects"][0].id))
+    project = project_service.get(create_workspace_with_users_and_projects_fixture["projects"][0].id)
 
     assert len(project.users) == 1
     assert user_1.userId not in [user.userId for user in project.users]
@@ -157,7 +157,7 @@ def test_add_existing_user_to_project(create_projects_fixture):
                              json=request_body, headers={"Authorization": token})
     assert response.status_code == 400
 
-    project = project_service.get(str(create_projects_fixture[0].id))
+    project = project_service.get(create_projects_fixture[0].id)
 
     assert len(project.users) == 1
     assert project.users[0].isEditor == True

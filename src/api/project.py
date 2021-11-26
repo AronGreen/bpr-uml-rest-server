@@ -3,6 +3,7 @@ from flask import Blueprint, g, request, abort, Response
 from bpr_data.models.project import Project
 from bpr_data.models.response import ApiResponse
 from src.services import project_service
+from bson import ObjectId
 
 api = Blueprint('projects_api', __name__)
 
@@ -97,7 +98,7 @@ def add_users(projectId: str):
     request_data = request.get_json()
     try:
         result = project_service.add_users(
-            project_id=projectId,
+            project_id=ObjectId(projectId),
             users=ProjectUser.to_object_ids("userId", ProjectUser.from_dict_list(request_data['users']))
         )
         return Response(result.as_json(), mimetype="application/json")
@@ -138,7 +139,7 @@ def replace_users(projectId: str):
     request_data = request.get_json()
     try:
         result = project_service.replace_users(
-            project_id=projectId,
+            project_id=ObjectId(projectId),
             users=ProjectUser.to_object_ids("userId", ProjectUser.from_dict_list(request_data['users']))
             )
         return Response(result.as_json(), mimetype="application/json")

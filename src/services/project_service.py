@@ -59,7 +59,7 @@ def delete_project(project_id: str | ObjectId) -> bool:
     return db.delete(collection, id=project_id)
 
 
-def add_users(project_id: str, users: list) -> Project:
+def add_users(project_id: ObjectId, users: list) -> Project:
     project = get(project_id=project_id)
     list_util.ensure_no_duplicates(users, "userId")
     if not workspace_service.are_users_in_workspace(workspace_id=project.workspaceId,
@@ -79,7 +79,7 @@ def get_user_projects(workspace_id: str, user_id: ObjectId) -> list:
         db.find(collection=collection, nested_conditions={'users.userId': user_id}, workspaceId=ObjectId(workspace_id)))
 
 
-def replace_users(project_id: str | ObjectId, users: list) -> Project:
+def replace_users(project_id: ObjectId | ObjectId, users: list) -> Project:
     project = get(project_id=project_id)
     list_util.ensure_no_duplicates(users, "userId")
     if not workspace_service.are_users_in_workspace(workspace_id=project.workspaceId,
