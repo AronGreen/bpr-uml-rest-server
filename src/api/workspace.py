@@ -335,7 +335,7 @@ def get_workspace_team(workspaceId: str):
 @api.route("/<workspaceId>", methods=['PUT'])
 def update_workspace_name(workspaceId: str):
     """
-      Update a team's name
+      Update a workspace's name
       ---
       tags:
         - workspaces
@@ -353,7 +353,7 @@ def update_workspace_name(workspaceId: str):
                 type: string
       responses:
         200:
-          description: teams
+          description: workspace
         404:
           description: workspace not found
       """

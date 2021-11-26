@@ -180,5 +180,35 @@ def get_team_by_team_id(teamId: str):
           schema:
             type: object
       """
-    result = service.get_team(team_id = teamId)
+    result = service.get_team(team_id = ObjectId(teamId))
     return Response(result.as_json(), mimetype="application/json")
+
+@api.route("/<teamId>", methods=['PUT'])
+def update_team_name(teamId: str):
+    """
+      Update a team's name
+      ---
+      tags:
+        - teams
+      parameters:
+        - in: path
+          name: teamId
+          required: true
+        - in: body
+          name: body
+          schema:
+            required:
+              - name
+            properties:
+              name:
+                type: string
+      responses:
+        200:
+          description: teams
+        404:
+          description: team not found
+      """
+    request_data = request.get_json()
+    if 'name' in request_data:
+        name = request_data['name']
+    return Response(status=200, response=Team.as_json(service.update_team_name(team_id=teamId, name=name)), mimetype="application/json")

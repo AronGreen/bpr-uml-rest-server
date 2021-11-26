@@ -148,6 +148,8 @@ def get_teams(workspace_id: str) -> list:
 
 def update_workspace_name(workspace_id: str, name: str):
     workspace = get_workspace(workspace_id=ObjectId(workspace_id))
+    if workspace is None:
+        abort(404, description="Workspace not found")
     workspace.name = name
     db.update(collection=collection, item=workspace)
     return get_workspace(workspace_id=ObjectId(workspace_id))

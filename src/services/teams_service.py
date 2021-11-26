@@ -95,3 +95,11 @@ def __make_unwind_step(path: str, preserve_null_and_empty_arrays: bool = True) -
                 'preserveNullAndEmptyArrays': preserve_null_and_empty_arrays
             }
     }
+
+def update_team_name(team_id: str, name: str):
+    team = get_team(team_id=ObjectId(team_id))
+    if team is None:
+        abort(404, description="Team not found")
+    team.name = name
+    db.update(collection=collection, item=team)
+    return get_team(team_id=ObjectId(team_id))
