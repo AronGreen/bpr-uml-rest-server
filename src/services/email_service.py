@@ -33,7 +33,7 @@ Subject: {0}
     except Exception as err: # TODO: Catch specific exceptions and handle them
         log.log_error(err, "error while sending email")
         print("we got a problem when trying to send the email", flush=True)
-        print(str(err), Flush=True)
+        print(str(err), flush=True)
         return ApiResponse(response="An error occurred").as_json()
     print("returning confirmation that the email was sent", flush=True)
     return ApiResponse(response="Invitation sent").as_json()
