@@ -1,11 +1,12 @@
 from __future__ import annotations
+
+from bpr_data.models.user import User
+from bpr_data.models.workspace import Workspace
 from bson import ObjectId
 
 from bpr_data.repository import Repository, Collection
 from bpr_data.models.invitation import Invitation, InvitationGetModel
 
-import src.services.workspace_service as workspace_service
-import src.services.users_service as users_service
 import settings
 
 db = Repository.get_instance(**settings.MONGO_CONN)
@@ -48,8 +49,9 @@ def get_workspace_invitations_for_user(email: str) -> list:
 
 
 def get_invitation_get_model(invitation: Invitation):
-    workspace = workspace_service.get_workspace(invitation.workspaceId)
-    user = users_service.get_user(invitation.inviterId)
+    workspace = db.find_one(Collection.WORKSPACE, _id=invitation.workspaceId, return_type=Workspace)
+
+    user = db.find_one(Collection.USER, return_type=User, id=invitation.inviterId)
     return InvitationGetModel(
         _id=invitation._id,
         inviterId=invitation.inviterId,

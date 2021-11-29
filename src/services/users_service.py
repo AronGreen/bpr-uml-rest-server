@@ -1,3 +1,4 @@
+from bpr_data.models.workspace import Workspace
 from bson import ObjectId
 
 from bpr_data.models.invitation import Invitation
@@ -7,7 +8,6 @@ from bpr_data.models.user import User
 
 import src.util.email_utils as email_utils
 import src.services.email_service as email_service
-import src.services.workspace_service as workspace_service
 import settings
 
 db = Repository.get_instance(**settings.MONGO_CONN)
@@ -17,7 +17,7 @@ collection = Collection.USER
 
 def invite_user(invitation: Invitation) -> str:
     if email_utils.is_valid(invitation.inviteeEmailAddress):
-        workspace_name = workspace_service.get_workspace(invitation.workspaceId).name
+        workspace_name = db.find_one(Collection.WORKSPACE, _id=invitation.workspaceId, return_type=Workspace).name
         subject = "Diagramz invitation"
         message = f"{invitation.inviterId} sent you an invitation on Diagramz to collaborate on {workspace_name}"
         return email_service.send_email(invitation.inviteeEmailAddress, subject, message)
