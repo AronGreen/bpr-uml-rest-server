@@ -71,7 +71,7 @@ def check_auth():
         abort(401)
     except (ValueError, fb_auth.InvalidIdTokenError) as err:
         log.log_error(err, "Authentication - bad token exception")
-        abort(400)
+        abort(400) 
 
 
 @app.errorhandler(HTTPException)
