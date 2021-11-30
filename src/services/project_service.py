@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+from bpr_data.models.user import User
 from flask import abort
 from bson import ObjectId
 
@@ -8,7 +10,6 @@ from bpr_data.models.project import Project, ProjectUser, ProjectTeam
 from src.util import list_util
 import src.services.workspace_service as workspace_service
 import src.services.teams_service as teams_service
-import src.services.users_service as users_service
 import settings
 
 db = Repository.get_instance(**settings.MONGO_CONN)
@@ -36,7 +37,7 @@ def get_for_workspace(workspace_id: ObjectId) -> Project:
 
 def create_project(title: str, workspaceId: ObjectId, creator_firebase_id: str) -> Project:
     workspace = workspace_service.get_workspace(workspace_id=ObjectId(workspaceId))
-    user_id = users_service.get_user_by_firebase_id(firebase_id=creator_firebase_id).id
+    user_id = db.find_one(collection.USER, User, firebaseId=creator_firebase_id).id
     if workspace is None:
         abort(404, description="Workspace not found")
     project = Project(
