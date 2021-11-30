@@ -16,14 +16,13 @@ repo = Repository.get_instance(**settings.MONGO_TEST_CONN)
 port_no = str(settings.APP_PORT)
 base_url = "http://" + settings.APP_HOST + ":" + port_no + "/"
 
-created_resources = []
-
+created_resources = {}
 
 def cleanup_fixture(resources: list):
-    resources.extend(created_resources)
-    for resource in resources:
-        collection = list(resource.keys())[0]
-        repo.delete(collection, id=resource.get(collection))
+    resources.update(created_resources)
+    for resource_id in resources.keys():
+        collection = resources[resource_id]
+        repo.delete(collection, id=resource_id)
 
 
 def get_default_token_fixture():
@@ -51,7 +50,7 @@ def get_token_fixture(email, password):
 def create_user_fixture(token: str) -> User:
     response = requests.post(url=base_url + "users", headers={"Authorization": token})
     result = User.from_json(response.content.decode())
-    created_resources.append({Collection.USER: result._id})
+    created_resources[result._id]=Collection.USER
     return result
 
 
@@ -61,7 +60,7 @@ def create_workspace_fixture(token: str):
     }
     response = requests.post(url=base_url + "workspaces", json=request_body, headers={"Authorization": token})
     workspace = Workspace.from_json(response.content.decode())
-    created_resources.append({Collection.WORKSPACE: workspace.id})
+    created_resources[workspace.id] = Collection.WORKSPACE
     return workspace
 
 
@@ -79,7 +78,7 @@ def create_team_fixture(token: str, workspaceId: str):
     }
     response = requests.post(url=base_url + "teams", json=request_body, headers={"Authorization": token})
     team = Team.from_json(response.content.decode())
-    created_resources.append({Collection.TEAM: team._id})
+    created_resources[team.id] = Collection.TEAM
     return team
 
 def add_users_to_team(token: str, team_id: str, users: list):
@@ -126,8 +125,8 @@ def create_projects_fixture(workspace_id: str, token: str) -> list:
     response = requests.post(url=base_url + "projects", json=request_body, headers={"Authorization": token})
     project2 = Project.from_json(response.content.decode())
 
-    created_resources.append({Collection.PROJECT: project1._id})
-    created_resources.append({Collection.PROJECT: project2._id})
+    created_resources[project1._id] = Collection.PROJECT
+    created_resources[project2._id] = Collection.PROJECT
 
     return [project1, project2]
 
@@ -187,8 +186,8 @@ def make_user_invitations_fixture(token: str, user: User):
     inv_1 = invitation_service.add_invitation(inv_1)
     inv_2 = invitation_service.add_invitation(inv_2)
 
-    created_resources.append({Collection.INVITATION: inv_1._id})
-    created_resources.append({Collection.INVITATION: inv_2._id})
+    created_resources[inv_1._id] = Collection.INVITATION
+    created_resources[inv_2._id] = Collection.INVITATION
 
     return {
         "user": dummy_user,

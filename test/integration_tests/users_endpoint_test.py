@@ -10,7 +10,7 @@ import settings
 repo = Repository.get_instance(**settings.MONGO_TEST_CONN)
 
 
-created_resources = []
+created_resources = {}
 port_no = str(settings.APP_PORT)
 base_url = "http://" + settings.APP_HOST + ":" + port_no + "/users"
 
@@ -29,7 +29,7 @@ def test_add_user():
     assert response.status_code == 200
     user = User.from_json(response.content.decode())
     assert settings.SMTP_EMAIL_ADDRESS == user.email
-    created_resources.append({Collection.USER: user._id})
+    created_resources[user._id] = Collection.USER
 
 
 def test_add_user_a_second_time():
@@ -40,4 +40,4 @@ def test_add_user_a_second_time():
     assert response.status_code == 200
     user = User.from_json(response.content.decode())
     assert settings.SMTP_EMAIL_ADDRESS == user.email
-    created_resources.append({Collection.USER: user._id})
+    created_resources[user._id] = Collection.USER

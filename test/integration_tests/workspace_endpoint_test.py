@@ -12,7 +12,7 @@ import settings
 
 repo = Repository.get_instance(**settings.MONGO_TEST_CONN)
 
-created_resources = []
+created_resources = {}
 port_no = str(settings.APP_PORT)
 base_url = "http://" + settings.APP_HOST + ":" + port_no + "/"
 
@@ -58,7 +58,7 @@ def invite_user_fixture() -> dict:
     response = requests.post(url=base_url + "workspaces/invitation", json=request_body,
                              headers={"Authorization": token})
     response = json.loads(response.content.decode())
-    created_resources.append({Collection.INVITATION: response["_id"]})
+    created_resources[response["_id"]] = Collection.INVITATION
     return {
         "user_with_token": user,
         "workspace_id": str(workspace.id),
@@ -90,7 +90,7 @@ def test_create_workspace():
     }
     response = requests.post(url=base_url + "workspaces", json=request_body, headers={"Authorization": token})
     assert response.status_code == 200
-    created_resources.append({Collection.WORKSPACE: Workspace.from_json(response.content.decode())._id})
+    created_resources[Workspace.from_json(response.content.decode())._id] = Collection.WORKSPACE
 
 
 def test_create_workspace_fail():
@@ -115,7 +115,7 @@ def test_invite_user(create_workspace_fixture):
     invitation = Invitation.from_json(response.content.decode())
     assert invitation.workspaceId == str(create_workspace_fixture.id)
     assert invitation.inviteeEmailAddress == invitee_email_address
-    created_resources.append({Collection.INVITATION: invitation._id})
+    created_resources[invitation._id] = Collection.INVITATION
 
 
 def test_invite_user_already_invited(create_workspace_fixture):
@@ -130,8 +130,8 @@ def test_invite_user_already_invited(create_workspace_fixture):
                              headers={"Authorization": token})
     assert response.status_code == 400
     assert json.loads(response.content.decode())["description"] == "User already invited"
-    created_resources.append({Collection.INVITATION: src.services.invitation_service.get_invitation(
-        workspace_id=create_workspace_fixture._id, invitee_email_address=invitee_email_address)._id})
+    created_resources[src.services.invitation_service.get_invitation(
+        workspace_id=create_workspace_fixture._id, invitee_email_address=invitee_email_address)._id] = Collection.INVITATION
 
 
 def test_get_user_workspace_invitations(make_user_invitations_fixture):

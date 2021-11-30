@@ -13,7 +13,7 @@ import settings
 
 repo = Repository.get_instance(**settings.MONGO_TEST_CONN)
 
-created_resources = []
+created_resources = {}
 port_no = str(settings.APP_PORT)
 base_url = "http://" + settings.APP_HOST + ":" + port_no + "/"
 
@@ -54,8 +54,8 @@ def create_projects_fixture() -> list:
         teams=list(),
         users=[user.id])
     project4 = Project.from_dict(repo.insert(Collection.PROJECT, project4))
-    created_resources.append({Collection.PROJECT: project3._id})
-    created_resources.append({Collection.PROJECT: project4._id})
+    created_resources[project3._id] = Collection.PROJECT
+    created_resources[project4._id] = Collection.PROJECT
 
     projects.extend([project3, project4])
     return projects
@@ -79,7 +79,7 @@ def test_create_project(create_workspace_fixture):
     assert str(user.id) in [user.userId for user in project.users]
     assert project.title == project_title
     assert project.workspaceId == str(create_workspace_fixture.id)
-    created_resources.append({Collection.PROJECT: project._id})
+    created_resources[project._id] = Collection.PROJECT
 
 
 def test_get_projects_for_workspace(create_projects_fixture):
@@ -176,5 +176,4 @@ def test_replace_users_in_project(create_workspace_with_users_and_projects_fixtu
     assert response.status_code == 200
 
     result = Project.from_json(response.content.decode())
-    users_dict = result.users
     assert len(result.users) == 1

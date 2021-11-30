@@ -7,7 +7,7 @@ import settings
 
 repo = Repository.get_instance(**settings.MONGO_TEST_CONN)
 
-created_resources = []
+created_resources = {}
 port_no = str(settings.APP_PORT)
 base_url = "http://" + settings.APP_HOST + ":" + port_no + "/"
 
@@ -49,7 +49,7 @@ def test_create_team(create_workspace_fixture):
     assert len(team.users) == 0
     assert team.name == team_name
     assert team.workspaceId == str(create_workspace_fixture.id)
-    created_resources.append({Collection.TEAM: team._id})
+    created_resources[team._id] = Collection.TEAM
 
 
 def test_add_users_to_team(create_workspace_with_users_and_empty_team_fixture):
@@ -76,7 +76,8 @@ def test_replace_users_in_team(create_workspace_with_users_and_team_fixture):
         "users": TeamUser.as_dict_list([user_1])
     }
 
-    response = requests.put(url=base_url + "/teams/" + str(create_workspace_with_users_and_team_fixture["team"].id) + "/users", json=request_body, headers={"Authorization": token})
+    response = requests.put(url=base_url + "/teams/" + str(create_workspace_with_users_and_team_fixture["team"].id) + "/users", 
+                            json=request_body, headers={"Authorization": token})
     assert response.status_code == 200
     result = Team.from_json(response.content.decode())
     result.users = TeamUser.from_dict_list(result.users)
