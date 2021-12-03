@@ -115,9 +115,10 @@ def remove_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId)
 
 def get_workspace_users(workspaceId: str | ObjectId) -> list:
     workspace = Workspace.from_dict(db.find_one(collection, id=workspaceId))
+    workspace.users = WorkspaceUser.from_dict_list(workspace.users)
     if workspace.users is None:
         return list()
-    return [users_service.get_user(user_id) for user_id in workspace.users]
+    return [users_service.get_user(user.userId) for user in workspace.users]
 
 
 def is_user_in_workspace(workspace_id: ObjectId, user_id: ObjectId):
