@@ -6,13 +6,15 @@ from flask import g, abort
 from bpr_data.repository import Repository, Collection
 from bpr_data.models.invitation import Invitation
 from bpr_data.models.user import User
-from bpr_data.models.workspace import Workspace
+from bpr_data.models.workspace import Workspace, WorkspaceUser
+from bpr_data.models.permission import WorkspacePermission
 from bpr_data.models.team import Team
 
 import src.util.email_utils as email
 import src.services.email_service as email_service
 import src.services.users_service as users_service
 import src.services.invitation_service as invitation_service
+import src.services.permission_service as permission_service
 import settings
 
 db = Repository.get_instance(**settings.MONGO_CONN)
@@ -22,7 +24,8 @@ collection = Collection.WORKSPACE
 
 def create_workspace(workspace: Workspace) -> Workspace:
     creator = User.from_dict(db.find_one(Collection.USER, firebaseId=g.firebase_id))
-    workspace.users = [creator.id]
+    workspace_user = WorkspaceUser(userId = creator.id, permissions=list(WorkspacePermission))
+    workspace.users = [workspace_user]
     created_workspace = db.insert(collection, workspace)
     if created_workspace is not None:
         return Workspace.from_dict(created_workspace)
@@ -31,7 +34,9 @@ def create_workspace(workspace: Workspace) -> Workspace:
 def get_workspace(workspace_id: ObjectId) -> Workspace:
     find_result = db.find_one(collection, _id=workspace_id)
     if find_result is not None:
-        return Workspace.from_dict(find_result)
+        workspace = Workspace.from_dict(find_result)
+        workspace.users = WorkspaceUser.from_dict_list(workspace.users)
+        return workspace
 
 
 def get_user_workspaces(firebase_id: str) -> list:
@@ -94,7 +99,7 @@ def add_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) ->
             collection=Collection.WORKSPACE,
             document_id=workspace_id,
             field_name='users',
-            item=user_id
+            item=WorkspaceUser(userId=user_id, permissions=[])
         )
 
 
@@ -147,3 +152,14 @@ def update_workspace_name(workspace_id: str, name: str):
 def delete_workspace(workspace_id: ObjectId) -> bool:
     db.delete(collection, id=workspace_id)
     return "ok"
+
+def update_user_permissions(workspace_id: ObjectId, user_id: ObjectId, permissions: list):
+    workspace = get_workspace(workspace_id=workspace_id)
+    if workspace is None:
+        abort(404, description="Workspace not found")
+    permissions = permission_service.convert_to_workspace_permissions_enums(permissions)
+    for i in range(len(workspace.users)):
+        if user_id == workspace.users[i].userId:
+            workspace.users[i].permissions = permissions
+    db.update(collection=collection, item=workspace)
+    return get_workspace(workspace_id=ObjectId(workspace_id))

@@ -45,7 +45,7 @@ def create_project(title: str, workspaceId: ObjectId, creator_firebase_id: str) 
         title=title,
         workspaceId=ObjectId(workspaceId),
         teams=list(),
-        users=[ProjectUser(userId=user_id, isEditor=True)])
+        users=[ProjectUser(userId=user_id, isEditor=True, isProjectManager=True)])
     insert_result = db.insert(collection, project)
     if insert_result is not None:
         return Project.from_dict(insert_result)

@@ -379,3 +379,34 @@ def delete_workspace(workspaceId: str):
           description: confirmation
       """
   return Response(status=200, response=ApiResponse(workspace_service.delete_workspace(workspace_id=ObjectId(workspaceId))).as_json(), mimetype="application/json")
+
+@api.route("/<workspaceId>/<userId>/permissions", methods=['PUT'])
+def edit_workspace_permissions(workspaceId, userId):
+  """
+      Update a user's workspace permissions
+      ---
+      tags:
+        - workspaces
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+        -in: path
+          name: userId
+          required: true
+        - in: body
+          name: body
+          schema:
+            required:
+              - permissions
+            properties:
+              name:
+                type: list of permissions
+      responses:
+        200:
+          description: updated
+        404:
+          description: workspace not found
+      """
+  request_data = request.get_json()
+  return Response(status=200, response=ApiResponse(workspace_service.update_user_permissions(workspace_id = ObjectId(workspaceId), user_id = ObjectId(userId), permissions=request_data["permissions"])).as_json(), mimetype="application/json")
