@@ -409,3 +409,23 @@ def edit_workspace_permissions(workspaceId, userId):
       """
   request_data = request.get_json()
   return Response(status=200, response=ApiResponse(workspace_service.update_user_permissions(workspace_id = ObjectId(workspaceId), user_id = ObjectId(userId), permissions=request_data["permissions"])).as_json(), mimetype="application/json")
+
+@api.route("/<workspaceId>/user", methods=['GET'])
+def get_workspace_user(workspaceId):
+  """
+      Get workspace user
+      ---
+      tags:
+        - workspaces
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+      responses:
+        200:
+          description: workspace user
+        404:
+          workspace not found
+      """
+  firebase_id = g.firebase_id
+  return Response(status=200, response=ApiResponse(workspace_service.get_workspace_user(firebase_id=firebase_id, workspace_id=ObjectId(workspaceId))).as_json(), mimetype="application/json")

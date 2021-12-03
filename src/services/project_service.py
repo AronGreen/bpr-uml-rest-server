@@ -10,6 +10,7 @@ from bpr_data.models.project import Project, ProjectUser, ProjectTeam
 from src.util import list_util
 import src.services.workspace_service as workspace_service
 import src.services.teams_service as teams_service
+import src.services.users_service as users_service
 import settings
 
 db = Repository.get_instance(**settings.MONGO_CONN)
@@ -156,3 +157,12 @@ def update_project_title(project_id: str, title: str):
     project.title = title
     db.update(collection=collection, item=project)
     return get(project_id=ObjectId(project_id))
+
+def get_project_user(project_id: ObjectId, firebase_id: str):
+    project = get(project_id=project_id)
+    if project is None:
+        abort(404, description="Project not found")
+    user = users_service.get_user_by_firebase_id(firebase_id)
+    for project_user in project.users:
+        if project_user.userId == user.id:
+            return project_user

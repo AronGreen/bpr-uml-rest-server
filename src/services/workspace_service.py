@@ -164,3 +164,12 @@ def update_user_permissions(workspace_id: ObjectId, user_id: ObjectId, permissio
             workspace.users[i].permissions = permissions
     db.update(collection=collection, item=workspace)
     return get_workspace(workspace_id=ObjectId(workspace_id))
+
+def get_workspace_user(firebase_id:str, workspace_id: ObjectId):
+    workspace = get_workspace(workspace_id=workspace_id)
+    if workspace is None:
+        abort(404, description="Workspace not found")
+    user = users_service.get_user_by_firebase_id(firebase_id)
+    for workspace_user in workspace.users:
+        if workspace_user.userId == user.id:
+            return workspace_user

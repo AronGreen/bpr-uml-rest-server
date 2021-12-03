@@ -236,3 +236,21 @@ def delete_project(projectId: str):
           description: confirmation
       """
   return Response(status=200, response=ApiResponse(response=project_service.delete_project(project_id=ObjectId(projectId))).as_json(), mimetype="application/json")
+
+@api.route("/<projectId>/user", methods=['GET'])
+def get_project_user(projectId: str):
+  """
+      Get project user
+      ---
+      tags:
+        - projects
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+      responses:
+        200:
+          description: user
+        404: Project not found
+      """
+  return Response(status=200, response=ApiResponse(response=project_service.get_project_user(project_id=ObjectId(projectId), firebase_id=g.firebase_id)).as_json(), mimetype="application/json")
