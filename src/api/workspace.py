@@ -391,7 +391,6 @@ def edit_workspace_permissions(workspaceId, userId):
         - in: path
           name: workspaceId
           required: true
-        -in: path
           name: userId
           required: true
         - in: body
