@@ -37,12 +37,13 @@ def get_workspace(workspace_id: ObjectId) -> Workspace:
         workspace = Workspace.from_dict(find_result)
         workspace.users = WorkspaceUser.from_dict_list(workspace.users)
         return workspace
-
+    else:
+        abort(404, description="Workspace not found")
 
 def get_user_workspaces(firebase_id: str) -> list:
     # TODO: filter so only current users workspaces are present
     user = users_service.get_user_by_firebase_id(firebase_id)
-    find_result = db.find(collection=collection, users=user.id)
+    find_result = db.find(collection=collection, nested_conditions={'users.userId': user.id})
     if find_result is not None:
         return Workspace.from_dict_list(find_result)
 
