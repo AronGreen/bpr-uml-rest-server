@@ -7,6 +7,8 @@ from bpr_data.models.user import User
 from bpr_data.models.team import Team
 from bpr_data.models.workspace import Workspace
 from bpr_data.models.response import ApiResponse
+from bpr_data.models.permission import WorkspacePermission
+import src.services.permission_service as permission_service
 
 from src.services import workspace_service, users_service, project_service
 
@@ -85,8 +87,7 @@ def get_workspaces():
                     type: string
                   example: ['61901488d13eab96f1e5d154']
       """
-    firebase_id = g.firebase_id
-    data = workspace_service.get_user_workspaces(firebase_id)
+    data = workspace_service.get_user_workspaces(g.firebase_id)
     result = Workspace.as_json_list(data)
     return Response(result, mimetype="application/json")
 
@@ -119,8 +120,12 @@ def get_workspace(workspaceId: str):
                 items:
                   type: string
                 example: ['61901488d13eab96f1e5d154']
+        404:
+          description: Workspace not found
+        403:
+          description: User doesn't have access to workspace
       """
-    result = workspace_service.get_workspace(ObjectId(workspaceId))
+    result = workspace_service.get_workspace_for_user(workspace_id=ObjectId(workspaceId), firebase_id=g.firebase_id)
     return Response(result.as_json(), mimetype="application/json")
 
 
@@ -154,7 +159,7 @@ def get_workspace_users(workspaceId: str):
                 type: string
                 example: kejflksjæakdfæk
       """
-    result = workspace_service.get_workspace_users(workspaceId)
+    result = workspace_service.get_workspace_users(workspace_id=ObjectId(workspaceId), firebase_id=g.firebase_id)
     return Response(User.as_json_list(result), mimetype="application/json")
 
 
@@ -234,6 +239,7 @@ def invite_user():
           description: Invitation flow is started for user
       """
     request_data = request.get_json()
+    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(request_data['workspaceId']), permissions=[WorkspacePermission.MANAGE_USERS])
     if 'workspaceId' in request_data and 'inviteeEmailAddress' in request_data:
         invitation = Invitation(
             _id=None,
@@ -271,6 +277,7 @@ def remove_user_from_workspace():
           description: User is removed
       """
     request_data = request.get_json()
+    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(request_data['workspaceId']), permissions=[WorkspacePermission.MANAGE_USERS])
     if 'workspaceId' in request_data and 'userId' in request_data:
         if workspace_service.remove_workspace_user(
                 request_data['workspaceId'],
@@ -313,7 +320,7 @@ def respond_to_invitation():
     return Response(status=400, response=ApiResponse(response="Insufficient data").as_json())
 
 @api.route("/<workspaceId>/teams", methods=['GET'])
-def get_workspace_team(workspaceId: str):
+def get_workspace_teams(workspaceId: str):
     """
       Get the teams inside a workspace
       ---
@@ -329,7 +336,7 @@ def get_workspace_team(workspaceId: str):
         404:
           description: workspace not found
       """
-    return Response(status=200, response=Team.as_json_list(workspace_service.get_teams(workspaceId)), mimetype="application/json")
+    return Response(status=200, response=Team.as_json_list(workspace_service.get_teams(workspace_id=workspaceId, firebase_id=g.firebase_id)), mimetype="application/json")
 
 
 @api.route("/<workspaceId>", methods=['PUT'])
@@ -357,6 +364,7 @@ def update_workspace_name(workspaceId: str):
         404:
           description: workspace not found
       """
+    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(workspaceId), permissions=[WorkspacePermission.MANAGE_WORKSPACE])
     request_data = request.get_json()
     if 'name' in request_data:
         name = request_data['name']
@@ -378,10 +386,11 @@ def delete_workspace(workspaceId: str):
         200:
           description: confirmation
       """
+  permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(workspaceId), permissions=[WorkspacePermission.MANAGE_WORKSPACE])
   return Response(status=200, response=ApiResponse(workspace_service.delete_workspace(workspace_id=ObjectId(workspaceId))).as_json(), mimetype="application/json")
 
 @api.route("/<workspaceId>/<userId>/permissions", methods=['PUT'])
-def edit_workspace_permissions(workspaceId, userId):
+def edit_workspace_permissions_for_user(workspaceId, userId):
   """
       Update a user's workspace permissions
       ---
@@ -407,6 +416,7 @@ def edit_workspace_permissions(workspaceId, userId):
         404:
           description: workspace not found
       """
+  permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(workspaceId), permissions=[WorkspacePermission.MANAGE_USERS])
   request_data = request.get_json()
   return Response(status=200, response=ApiResponse(workspace_service.update_user_permissions(workspace_id = ObjectId(workspaceId), user_id = ObjectId(userId), permissions=request_data["permissions"])).as_json(), mimetype="application/json")
 
@@ -427,5 +437,4 @@ def get_workspace_user(workspaceId):
         404:
           workspace not found
       """
-  firebase_id = g.firebase_id
-  return Response(status=200, response=ApiResponse(workspace_service.get_workspace_user(firebase_id=firebase_id, workspace_id=ObjectId(workspaceId))).as_json(), mimetype="application/json")
+  return Response(status=200, response=ApiResponse(workspace_service.get_workspace_user(firebase_id=g.firebase_id, workspace_id=ObjectId(workspaceId))).as_json(), mimetype="application/json")

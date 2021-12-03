@@ -3,6 +3,8 @@ from flask import Blueprint, g, request, abort, Response
 from bpr_data.models.project import Project
 from bpr_data.models.response import ApiResponse
 from src.services import project_service
+from bpr_data.models.permission import WorkspacePermission
+import src.services.permission_service as permission_service
 from bson import ObjectId
 
 api = Blueprint('projects_api', __name__)
@@ -37,6 +39,7 @@ def create_project():
          description: Insufficient data in request
    """
     request_data = request.get_json()
+    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(request_data['workspaceId']), permissions=[WorkspacePermission.MANAGE_WORKSPACE])
     try:
         create_result = project_service.create_project(
             title=request_data['title'],
@@ -66,7 +69,7 @@ def get_project(projectId: str):
          description: Project not found
     """
     try:
-        result = project_service.get_full_project(project_id=projectId)
+        result = project_service.get_full_project_for_user(project_id=projectId, firebase_id=g.firebase_id)
         return Response(result.as_json(), mimetype="application/json")
     except AttributeError:
         abort(404, "Project not found")
@@ -95,6 +98,7 @@ def add_users(projectId: str):
       400:
          description: Insufficient data in request
    """
+    permission_service.check_manage_project(firebase_id=g.firebase_id, project_id=projectId)
     request_data = request.get_json()
     try:
         result = project_service.add_users(
@@ -136,6 +140,7 @@ def replace_users(projectId: str):
       400:
          description: Insufficient data in request
    """
+    permission_service.check_manage_project(firebase_id=g.firebase_id, project_id=projectId)
     request_data = request.get_json()
     try:
         result = project_service.replace_users(
@@ -178,6 +183,7 @@ def replace_teams(projectId: str):
       400:
          description: Insufficient data in request
    """
+  permission_service.check_manage_project(firebase_id=g.firebase_id, project_id=projectId)
   request_data = request.get_json()
   try:
     result = project_service.replace_teams(
@@ -213,6 +219,7 @@ def update_project_name(projectId: str):
         404:
           description: project not found
       """
+    permission_service.check_manage_project(firebase_id=g.firebase_id, project_id=projectId)
     request_data = request.get_json()
     if 'title' in request_data:
         title = request_data['title']
@@ -235,6 +242,7 @@ def delete_project(projectId: str):
         200:
           description: confirmation
       """
+  permission_service.check_manage_project(firebase_id=g.firebase_id, project_id=projectId)
   return Response(status=200, response=ApiResponse(response=project_service.delete_project(project_id=ObjectId(projectId))).as_json(), mimetype="application/json")
 
 @api.route("/<projectId>/user", methods=['GET'])

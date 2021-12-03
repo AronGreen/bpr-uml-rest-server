@@ -5,6 +5,8 @@ from bpr_data.models.team import Team, TeamUser
 from bpr_data.models.response import ApiResponse
 
 from src.services import teams_service as service
+from bpr_data.models.permission import WorkspacePermission
+import src.services.permission_service as permission_service
 
 api = Blueprint('teams_api', __name__)
 
@@ -50,6 +52,7 @@ def create_team():
                 example: ['61901488d13eab96f1e5d154']
       """
     request_data = request.get_json()
+    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(request_data['workspaceId']), permissions=[WorkspacePermission.MANAGE_TEAMS])
     if 'workspaceId' in request_data and 'name' in request_data:
         workspaceId = request_data['workspaceId']
         name = request_data['name']
@@ -90,6 +93,8 @@ def add_users():
     request_data = request.get_json()
     if 'teamId' in request_data and 'users' in request_data:
         team_id = request_data['teamId']
+        team=service.get_team(team_id=team_id)
+        permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(team.workspaceId), permissions=[WorkspacePermission.MANAGE_TEAMS])
         result = service.add_users(team_id, TeamUser.to_object_ids("userId", TeamUser.from_json_list(request_data['users'])))
         return Response(result.as_json(), mimetype="application/json")
     abort(400)
@@ -125,6 +130,8 @@ def replace_users(teamId):
           description: Team not found
     """
     request_data = request.get_json()
+    team=service.get_team(team_id=teamId)
+    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(team.workspaceId), permissions=[WorkspacePermission.MANAGE_TEAMS])
     result = service.replace_users(teamId, TeamUser.to_object_ids("userId", TeamUser.from_dict_list(request_data['users'])))
     return Response(result.as_json(), mimetype="application/json")
 
@@ -157,6 +164,8 @@ def remove_user():
     request_data = request.get_json()
     if 'teamId' in request_data and 'userIds' in request_data:
         team_id = request_data['teamId']
+        team=service.get_team(team_id=team_id)
+        permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(team.workspaceId), permissions=[WorkspacePermission.MANAGE_TEAMS])
         user_ids = request_data['userIds']
         for user_id in user_ids:
             service.remove_user(team_id, user_id)
@@ -180,7 +189,7 @@ def get_team_by_team_id(teamId: str):
           schema:
             type: object
       """
-    result = service.get_team_with_user_details(team_id = ObjectId(teamId))
+    result = service.get_team_with_user_details_for_user(team_id = ObjectId(teamId), firebase_id=g.firebase_id)
     return Response(result.as_json(), mimetype="application/json")
 
 @api.route("/<teamId>", methods=['PUT'])
@@ -208,6 +217,8 @@ def update_team_name(teamId: str):
         404:
           description: team not found
       """
+    team=service.get_team(team_id=teamId)
+    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(team.workspaceId), permissions=[WorkspacePermission.MANAGE_TEAMS])
     request_data = request.get_json()
     if 'name' in request_data:
         name = request_data['name']
@@ -228,4 +239,6 @@ def delete_team(teamId: str):
         200:
           description: confirmation
       """
+  team=service.get_team(team_id=teamId)
+  permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(team.workspaceId), permissions=[WorkspacePermission.MANAGE_TEAMS])
   return Response(status=200, response=ApiResponse(service.delete_team(team_id=ObjectId(teamId))).as_json(), mimetype="application/json")

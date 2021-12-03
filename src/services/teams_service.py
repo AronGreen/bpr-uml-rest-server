@@ -64,7 +64,9 @@ def get_team(team_id: ObjectId):
 def remove_user(team_id: str, user_id: str) -> bool:
     return db.pull(collection, ObjectId(team_id), 'users', ObjectId(user_id))
 
-def get_team_with_user_details(team_id: ObjectId) -> Team:
+def get_team_with_user_details_for_user(team_id: ObjectId, firebase_id: str) -> Team:
+    team = get_team(team_id=team_id)
+    workspace_service.get_workspace_for_user(workspace_id=team.workspaceId, firebase_id=firebase_id)
     pipeline = [
         {'$match': {'_id': team_id}},
         __make_unwind_step('$users'),

@@ -17,6 +17,15 @@ db = Repository.get_instance(**settings.MONGO_CONN)
 
 collection = Collection.PROJECT
 
+def get_project_for_user(firebase_id: str, project_id: ObjectId):
+    project = get(project_id=project_id)
+    if project is None:
+        abort(404, description="Project not found")
+    user = users_service.get_user_by_firebase_id(firebase_id)
+    for project_user in project.users:
+        if project_user.userId == user.id:
+            return project
+    abort(403, description="User doesn't have access to the project")
 
 def get(project_id: ObjectId) -> Project:
     find_result = db.find_one(collection, _id=project_id)
@@ -93,6 +102,15 @@ def replace_users(project_id: ObjectId | ObjectId, users: list) -> Project:
     db.update(Collection.PROJECT, project)
     return get_full_project(project_id)
 
+def get_full_project_for_user(project_id: ObjectId, firebase_id: str):
+    project = get_full_project(project_id)
+    if project is None:
+        abort(404, description="Project not found")
+    user = users_service.get_user_by_firebase_id(firebase_id)
+    for project_user in project.users:
+        if project_user["userId"] == user.id:
+            return project
+    abort(403, description="User doesn't have access to project")
 
 def get_full_project(project_id: str | ObjectId) -> Project:
     pipeline = [
@@ -166,3 +184,4 @@ def get_project_user(project_id: ObjectId, firebase_id: str):
     for project_user in project.users:
         if project_user["userId"] == user.id:
             return project_user
+    abort(403, description="User not in project")
