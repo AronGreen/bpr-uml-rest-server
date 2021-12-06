@@ -281,12 +281,9 @@ def remove_user_from_workspace():
     request_data = request.get_json()
     permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(request_data['workspaceId']), permissions=[WorkspacePermission.MANAGE_WORKSPACE])
     if 'workspaceId' in request_data and 'userId' in request_data:
-        if workspace_service.remove_workspace_user(
-                request_data['workspaceId'],
-                request_data['userId']):
-            return Response(status=200)
-        else:
-            abort(500, description="Something went wrong")
+      return Response(ApiResponse(workspace_service.remove_workspace_user(
+        ObjectId(request_data['workspaceId']),
+        ObjectId(request_data['userId']))).as_json(), status = 200, mimetype="application/json")
     return abort(400, descriptioin="Workspace id and/or user id missing")
 
 
@@ -402,6 +399,7 @@ def edit_workspace_permissions_for_user(workspaceId, userId):
         - in: path
           name: workspaceId
           required: true
+        - in: path
           name: userId
           required: true
         - in: body
@@ -420,7 +418,7 @@ def edit_workspace_permissions_for_user(workspaceId, userId):
       """
   permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(workspaceId), permissions=[WorkspacePermission.MANAGE_PERMISSIONS])
   request_data = request.get_json()
-  return Response(status=200, response=ApiResponse(workspace_service.update_user_permissions(workspace_id = ObjectId(workspaceId), user_id = ObjectId(userId), permissions=request_data["permissions"])).as_json(), mimetype="application/json")
+  return Response(status=200, response=workspace_service.update_user_permissions(workspace_id = ObjectId(workspaceId), user_id = ObjectId(userId), permissions=request_data["permissions"]).as_json(), mimetype="application/json")
 
 @api.route("/<workspaceId>/user", methods=['GET'])
 def get_workspace_user(workspaceId):

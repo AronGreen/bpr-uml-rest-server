@@ -49,8 +49,6 @@ def get_token_fixture(email, password):
 
 def create_user_fixture(token: str) -> User:
     response = requests.post(url=base_url + "users", headers={"Authorization": token})
-    print(token)
-    print(response)
     result = User.from_json(response.content.decode())
     created_resources[result._id]=Collection.USER
     return result

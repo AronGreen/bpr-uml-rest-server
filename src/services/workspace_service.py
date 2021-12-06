@@ -157,15 +157,19 @@ def add_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) ->
         )
 
 def remove_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) -> bool:
-    return db.pull(
-        collection=Collection.WORKSPACE,
-        document_id=workspace_id,
-        field_name='users',
-        item=user_id
-    )
+    workspace = get_workspace(workspace_id)
+    for user in workspace.users:
+        if user.userId == user_id:
+            workspace.users.remove(user)
+            db.update(collection=collection, item=workspace)
+            return "ok"
+    abort(400, description="user not in workspace")
 
 def get_workspace_users(workspace_id: ObjectId, firebase_id: str) -> list:
     workspace=get_workspace_with_users(workspace_id)
+    user = users_service.get_user_by_firebase_id(firebase_id=firebase_id)
+    if user.id not in [user["userId"] for user in workspace.users]:
+        abort(403, description="User does not have access to the workspace")
     if workspace.users is None:
         return list()
     return [WebWorkspaceUser.from_workspace_user(container) for container in workspace.users]
