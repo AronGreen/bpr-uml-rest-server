@@ -146,7 +146,6 @@ def respond_to_invitation(invitation_id: str | ObjectId, accepted: bool) -> str:
     invitation_service.delete_invitation(invitation_id)
     return return_text
 
-
 def add_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) -> bool:
     if not are_users_in_workspace(ObjectId(workspace_id), [ObjectId(user_id)]):
         return db.push(

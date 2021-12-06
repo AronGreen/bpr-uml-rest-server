@@ -6,6 +6,7 @@ from bpr_data.models.workspace import Workspace
 from bpr_data.models.invitation import Invitation
 from bpr_data.models.project import Project
 from bpr_data.models.team import Team, TeamUser
+from bpr_data.models.permission import WorkspacePermission
 
 import src.services.workspace_service as workspace_service
 import src.services.invitation_service as invitation_service
@@ -70,7 +71,7 @@ def create_workspaces_fixture(token: str):
     return [workspace_1, workspace_2]
 
 
-def create_team_fixture(token: str, workspaceId: str):
+def create_team_fixture(token: str, workspaceId: str) -> Team:
     team_name = "create_team_fixture team"
     request_body = {
         "name": team_name,
@@ -145,6 +146,14 @@ def create_workspace_with_users_fixture(token: str):
         "users": users
     }
 
+def create_workspace_with_empty_team_fixture(token: str):
+    workspace = create_workspace_fixture(token)
+    team = create_team_fixture(token, str(workspace.id))
+    return {
+        "workspace": workspace,
+        "team": team
+    }
+
 def create_workspace_with_users_and_empty_team_fixture(token: str):
     workspace_with_users = create_workspace_with_users_fixture(token)
     team = create_team_fixture(token, str(workspace_with_users["workspace"].id))
@@ -194,3 +203,11 @@ def make_user_invitations_fixture(token: str, user: User):
         "workspaces": workspaces,
         "invitations": [inv_1, inv_2]
     }
+
+def remove_user_workspace_permission(workspace_id: str, permission: WorkspacePermission, token: str, user_id: str):
+    permissions = [p.value for p in WorkspacePermission]
+    permissions.remove(permission)
+    request_body = {
+        "permissions": permissions
+    }
+    requests.put(url=base_url + "workspaces/" + workspace_id + "/" + user_id + "/permissions", json=request_body, headers={"Authorization": token})

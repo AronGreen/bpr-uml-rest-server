@@ -3,7 +3,7 @@ import requests
 import json
 
 from bpr_data.repository import Repository, Collection
-from bpr_data.models.workspace import Workspace
+from bpr_data.models.workspace import Workspace, WorkspaceUser
 from bpr_data.models.invitation import Invitation, InvitationGetModel
 from bpr_data.models.permission import WorkspacePermission
 
@@ -77,12 +77,7 @@ def create_dummy_user_with_token_fixture() -> dict:
     return util.create_dummy_user_with_token_fixture()
 
 def remove_user_workspace_permission(workspace_id: str, permission: WorkspacePermission):
-    permissions = [p.value for p in WorkspacePermission]
-    permissions.remove(permission)
-    request_body = {
-        "permissions": permissions
-    }
-    requests.put(url=base_url + "workspaces/" + workspace_id + "/" + str(user.id) + "/permissions", json=request_body, headers={"Authorization": token})
+    util.remove_user_workspace_permission(workspace_id=workspace_id, permission=permission, user_id=str(user.id), token=token)
     
 
 def test_get_workspace(create_workspace_fixture):
@@ -314,3 +309,10 @@ def test_delete_workspace_without_permission(create_workspace_fixture):
                             headers={"Authorization": token})
     assert response.status_code == 403
     assert workspace_service.get_workspace(workspace_id=create_workspace_fixture.id) != None
+
+def test_get_workspace_user(create_workspace_fixture):
+    response = requests.get(url=base_url + 'workspaces/' + str(create_workspace_fixture.id) + "/user",
+                            headers={"Authorization": token})
+    assert response.status_code == 200
+    current_user = WorkspaceUser.from_json(response.content.decode())
+    assert str(user.id) == current_user.userId

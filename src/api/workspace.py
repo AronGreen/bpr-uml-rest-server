@@ -1,7 +1,6 @@
 from bson import ObjectId
 from flask import Blueprint, request, g, abort
 from flask.wrappers import Response
-import json
 
 from bpr_data.models.invitation import Invitation
 from bpr_data.models.user import User
@@ -437,4 +436,4 @@ def get_workspace_user(workspaceId):
         404:
           workspace not found
       """
-  return Response(status=200, response=ApiResponse(workspace_service.get_workspace_user(firebase_id=g.firebase_id, workspace_id=ObjectId(workspaceId))).as_json(), mimetype="application/json")
+  return Response(status=200, response=workspace_service.get_workspace_user(firebase_id=g.firebase_id, workspace_id=ObjectId(workspaceId)).as_json(), mimetype="application/json")

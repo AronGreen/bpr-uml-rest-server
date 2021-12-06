@@ -217,7 +217,7 @@ def update_team_name(teamId: str):
         404:
           description: team not found
       """
-    team=service.get_team(team_id=teamId)
+    team=service.get_team(team_id=ObjectId(teamId))
     permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(team.workspaceId), permissions=[WorkspacePermission.MANAGE_TEAMS])
     request_data = request.get_json()
     if 'name' in request_data:
@@ -239,6 +239,6 @@ def delete_team(teamId: str):
         200:
           description: confirmation
       """
-  team=service.get_team(team_id=teamId)
+  team=service.get_team(team_id=ObjectId(teamId))
   permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(team.workspaceId), permissions=[WorkspacePermission.MANAGE_TEAMS])
   return Response(status=200, response=ApiResponse(service.delete_team(team_id=ObjectId(teamId))).as_json(), mimetype="application/json")
