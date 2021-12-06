@@ -239,7 +239,7 @@ def invite_user():
           description: Invitation flow is started for user
       """
     request_data = request.get_json()
-    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(request_data['workspaceId']), permissions=[WorkspacePermission.MANAGE_USERS])
+    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(request_data['workspaceId']), permissions=[WorkspacePermission.MANAGE_WORKSPACE])
     if 'workspaceId' in request_data and 'inviteeEmailAddress' in request_data:
         invitation = Invitation(
             _id=None,
@@ -277,7 +277,7 @@ def remove_user_from_workspace():
           description: User is removed
       """
     request_data = request.get_json()
-    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(request_data['workspaceId']), permissions=[WorkspacePermission.MANAGE_USERS])
+    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(request_data['workspaceId']), permissions=[WorkspacePermission.MANAGE_WORKSPACE])
     if 'workspaceId' in request_data and 'userId' in request_data:
         if workspace_service.remove_workspace_user(
                 request_data['workspaceId'],
@@ -416,7 +416,7 @@ def edit_workspace_permissions_for_user(workspaceId, userId):
         404:
           description: workspace not found
       """
-  permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(workspaceId), permissions=[WorkspacePermission.MANAGE_USERS])
+  permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(workspaceId), permissions=[WorkspacePermission.MANAGE_PERMISSIONS])
   request_data = request.get_json()
   return Response(status=200, response=ApiResponse(workspace_service.update_user_permissions(workspace_id = ObjectId(workspaceId), user_id = ObjectId(userId), permissions=request_data["permissions"])).as_json(), mimetype="application/json")
 

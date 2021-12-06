@@ -1,4 +1,4 @@
-from flask import Blueprint, request, abort, Response
+from flask import Blueprint, request, abort, Response, g
 from bson import ObjectId
 
 from bpr_data.models.team import Team, TeamUser
