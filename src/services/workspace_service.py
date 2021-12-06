@@ -168,7 +168,7 @@ def get_workspace_users(workspace_id: ObjectId, firebase_id: str) -> list:
     workspace=get_workspace_with_users(workspace_id)
     if workspace.users is None:
         return list()
-    return WebWorkspaceUser.from_dict_list(workspace.users)
+    return [WebWorkspaceUser.from_workspace_user(container) for container in workspace.users]
 
 def are_users_in_workspace(workspace_id: ObjectId, user_ids: list):
     workspace = get_workspace(workspace_id)
