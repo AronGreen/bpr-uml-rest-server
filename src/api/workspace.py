@@ -1,6 +1,7 @@
 from bson import ObjectId
 from flask import Blueprint, request, g, abort
 from flask.wrappers import Response
+import json
 
 from bpr_data.models.invitation import Invitation
 from bpr_data.models.user import User
@@ -9,6 +10,7 @@ from bpr_data.models.workspace import Workspace
 from bpr_data.models.response import ApiResponse
 from bpr_data.models.permission import WorkspacePermission
 import src.services.permission_service as permission_service
+from src.models.web_workspace_user import WebWorkspaceUser
 
 from src.services import workspace_service, users_service, project_service
 
@@ -160,7 +162,7 @@ def get_workspace_users(workspaceId: str):
                 example: kejflksjæakdfæk
       """
     result = workspace_service.get_workspace_users(workspace_id=ObjectId(workspaceId), firebase_id=g.firebase_id)
-    return Response(User.as_json_list(result), mimetype="application/json")
+    return Response(WebWorkspaceUser.as_json_list(result), mimetype="application/json")
 
 
 @api.route("/<workspaceId>/projects", methods=['GET'])

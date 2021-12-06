@@ -93,7 +93,7 @@ def add_users():
     request_data = request.get_json()
     if 'teamId' in request_data and 'users' in request_data:
         team_id = request_data['teamId']
-        team=service.get_team(team_id=team_id)
+        team=service.get_team(team_id=ObjectId(team_id))
         permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(team.workspaceId), permissions=[WorkspacePermission.MANAGE_TEAMS])
         result = service.add_users(team_id, TeamUser.to_object_ids("userId", TeamUser.from_json_list(request_data['users'])))
         return Response(result.as_json(), mimetype="application/json")
@@ -130,7 +130,7 @@ def replace_users(teamId):
           description: Team not found
     """
     request_data = request.get_json()
-    team=service.get_team(team_id=teamId)
+    team=service.get_team(team_id=ObjectId(teamId))
     permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(team.workspaceId), permissions=[WorkspacePermission.MANAGE_TEAMS])
     result = service.replace_users(teamId, TeamUser.to_object_ids("userId", TeamUser.from_dict_list(request_data['users'])))
     return Response(result.as_json(), mimetype="application/json")

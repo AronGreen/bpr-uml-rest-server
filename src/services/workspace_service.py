@@ -16,6 +16,7 @@ import src.services.users_service as users_service
 import src.services.invitation_service as invitation_service
 import src.services.permission_service as permission_service
 import settings
+from src.models.web_workspace_user import WebWorkspaceUser
 
 db = Repository.get_instance(**settings.MONGO_CONN)
 
@@ -39,6 +40,49 @@ def get_workspace_for_user(workspace_id: ObjectId, firebase_id: str) -> Workspac
         if workspace_user.userId == user.id:
             return workspace
     abort(403, description="User doesn't have access to the workspace")
+
+def get_workspace_with_users_for_user(workspace_id: ObjectId, firebase_id: str) -> Workspace:
+    workspace = get_workspace_with_users(workspace_id=workspace_id)
+    if workspace is None:
+        abort(404, description="Workspace not found")
+    user = users_service.get_user_by_firebase_id(firebase_id)
+    for workspace_user in workspace.users:
+        if workspace_user.userId == user.id:
+            return workspace
+    abort(403, description="User doesn't have access to the workspace")
+
+def get_workspace_with_users(workspace_id: ObjectId) -> Team:
+    pipeline = [
+        {'$match': {'_id': workspace_id}},
+        __make_unwind_step('$users'),
+        {
+            '$lookup': {
+                'from': 'user',
+                'localField': 'users.userId',
+                'foreignField': '_id',
+                'as': 'users.user'
+            }
+        },
+        __make_unwind_step('$users.user'),
+        {'$group': {
+            '_id': '$_id',
+            'name': {'$first': '$name'},
+            'users': {'$addToSet': '$users'}
+        }}
+    ]
+    results = db.aggregate(collection=Collection.WORKSPACE,
+                           pipeline=pipeline)
+    if len(results) > 0:
+        return Workspace.from_dict(results[0])
+
+def __make_unwind_step(path: str, preserve_null_and_empty_arrays: bool = True) -> dict:
+    return {
+        '$unwind':
+            {
+                'path': path,
+                'preserveNullAndEmptyArrays': preserve_null_and_empty_arrays
+            }
+    }
 
 def get_workspace(workspace_id: ObjectId) -> Workspace:
     find_result = db.find_one(collection, _id=workspace_id)
@@ -121,17 +165,15 @@ def remove_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId)
     )
 
 def get_workspace_users(workspace_id: ObjectId, firebase_id: str) -> list:
-    workspace=get_workspace_for_user(workspace_id=workspace_id, firebase_id=firebase_id)
+    workspace=get_workspace_with_users(workspace_id)
     if workspace.users is None:
         return list()
-    return [users_service.get_user(user.userId) for user in workspace.users]
+    return WebWorkspaceUser.from_dict_list(workspace.users)
 
 def are_users_in_workspace(workspace_id: ObjectId, user_ids: list):
-    workspace = db.find_one(collection, _id=workspace_id)
-    if workspace is not None:
-        workspace = Workspace.from_dict(workspace)
+    workspace = get_workspace(workspace_id)
     for user_id in user_ids:
-        if user_id in workspace.users:
+        if user_id in [user.userId for user in workspace.users]:
             return True
         else:
             return False
