@@ -122,7 +122,6 @@ def remove_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId)
 
 def get_workspace_users(workspace_id: ObjectId, firebase_id: str) -> list:
     workspace=get_workspace_for_user(workspace_id=workspace_id, firebase_id=firebase_id)
-    workspace.users = WorkspaceUser.from_dict_list(workspace.users)
     if workspace.users is None:
         return list()
     return [users_service.get_user(user.userId) for user in workspace.users]

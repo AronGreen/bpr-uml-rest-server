@@ -336,7 +336,7 @@ def get_workspace_teams(workspaceId: str):
         404:
           description: workspace not found
       """
-    return Response(status=200, response=Team.as_json_list(workspace_service.get_teams(workspace_id=workspaceId, firebase_id=g.firebase_id)), mimetype="application/json")
+    return Response(status=200, response=Team.as_json_list(workspace_service.get_teams(workspace_id=ObjectId(workspaceId), firebase_id=g.firebase_id)), mimetype="application/json")
 
 
 @api.route("/<workspaceId>", methods=['PUT'])
