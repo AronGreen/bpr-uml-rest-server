@@ -163,57 +163,6 @@ def get_workspace_users(workspaceId: str):
     result = workspace_service.get_workspace_users(workspace_id=ObjectId(workspaceId), firebase_id=g.firebase_id)
     return Response(WebWorkspaceUser.as_json_list(result), mimetype="application/json")
 
-
-@api.route("/<workspaceId>/projects", methods=['GET'])
-def get_workspace_user_projects(workspaceId: str):
-    """
-      Get projects for current user and workspace
-      ---
-      tags:
-        - workspaces
-        - projects
-      parameters:
-        - in: path
-          name: workspaceId
-          required: true
-      responses:
-        200:
-          description: A JSON array of projects
-          schema:
-            type: object
-            properties:
-              _id:
-                type: str
-                example: '61901338d13eab96f1e5d153'
-              title:
-                type: string
-                example: AwesomeCO's workspace
-              users:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    userId:
-                      type: str
-                      example: '61901338d13eab96f1e5d153'
-                    isEditor:
-                      type: boolean
-              teams:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    teamId:
-                      type: str
-                      example: '61901338d13eab96f1e5d153'
-                    isEditor:
-                      type: boolean
-      """
-    user_id = users_service.get_user_by_firebase_id(g.firebase_id).id
-    result = project_service.get_user_projects(workspaceId, user_id)
-    return Response(User.as_json_list(result), mimetype="application/json")
-
-
 @api.route("/invitation", methods=['POST'])
 def invite_user():
     """

@@ -6,6 +6,7 @@ from bson import ObjectId
 
 from bpr_data.repository import Repository, Collection
 from bpr_data.models.project import Project, ProjectUser, ProjectTeam
+from src.models.web_project_user import WebProjectUser
 
 from src.util import list_util
 import src.services.workspace_service as workspace_service
@@ -183,5 +184,5 @@ def get_project_user(project_id: ObjectId, firebase_id: str):
     user = users_service.get_user_by_firebase_id(firebase_id)
     for project_user in project.users:
         if project_user["userId"] == user.id:
-            return project_user
+            return WebProjectUser.from_project_user(project_user)
     abort(403, description="User not in project")
