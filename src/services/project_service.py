@@ -58,7 +58,8 @@ def create_project(title: str, workspaceId: ObjectId, creator_firebase_id: str) 
         title=title,
         workspaceId=ObjectId(workspaceId),
         teams=list(),
-        users=[ProjectUser(userId=user_id, isEditor=True, isProjectManager=True)])
+        users=[ProjectUser(userId=user_id, isEditor=True, isProjectManager=True)],
+        folders=list())
     insert_result = db.insert(collection, project)
     if insert_result is not None:
         return Project.from_dict(insert_result)
@@ -144,7 +145,8 @@ def get_full_project(project_id: str | ObjectId) -> Project:
             'title': {'$first': '$title'},
             'workspaceId': {'$first': '$workspaceId'},
             'users': {'$addToSet': '$users'},
-            'teams': {'$addToSet': '$teams'}
+            'teams': {'$addToSet': '$teams'},
+            'folders': {'$addToSet': '$folders'}
         }}
     ]
     results = db.aggregate(collection=Collection.PROJECT,
