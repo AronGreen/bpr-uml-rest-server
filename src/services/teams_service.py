@@ -129,3 +129,9 @@ def check_teams_belong_to_workspace(team_ids: list, workspace_id: ObjectId):
         team = Team.from_dict(db.find_one(collection=collection, _id=team_id))
         if team.workspaceId != workspace_id:
             abort(405)
+
+def get_teams_for_user(user_id: str) -> list:
+    find_result = db.find(collection=collection, nested_conditions={'users.userId': user_id})
+    if find_result is not None:
+        return Team.from_dict_list(find_result)
+    else: return []

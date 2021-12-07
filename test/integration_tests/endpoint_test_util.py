@@ -1,3 +1,4 @@
+from bson.objectid import ObjectId
 import requests
 
 from bpr_data.repository import Repository, Collection
@@ -9,6 +10,7 @@ from bpr_data.models.team import Team, TeamUser
 from bpr_data.models.permission import WorkspacePermission
 
 import src.services.workspace_service as workspace_service
+import src.services.project_service as project_service
 import src.services.invitation_service as invitation_service
 import settings
 
@@ -83,11 +85,12 @@ def create_team_fixture(token: str, workspaceId: str) -> Team:
     return team
 
 def add_users_to_team(token: str, team_id: str, users: list):
-    user_1 = TeamUser(userId=users[0].id)
-    user_2 = TeamUser(userId=users[1].id)
+    team_users = []
+    for user in users:
+        team_users.append(TeamUser(userId=user.id))
 
     request_body = {
-        "users": TeamUser.as_json_list([user_1, user_2]),
+        "users": TeamUser.as_json_list(team_users),
         "teamId": team_id
     }
 
@@ -111,26 +114,20 @@ def create_dummy_user_with_token_fixture():
     }
     return user
 
+def create_project_fixture(workspace_id: str, title: str, token: str) -> Project:
+    request_body = {
+        "title": title,
+        "workspaceId": str(workspace_id)
+    }
+    response = requests.post(url=base_url + "projects", json=request_body, headers={"Authorization": token})
+    project = Project.from_json(response.content.decode())
+    created_resources[project._id] = Collection.PROJECT
+    return project
 
 def create_projects_fixture(workspace_id: str, token: str) -> list:
-    request_body = {
-        "title": "project 1",
-        "workspaceId": str(workspace_id)
-    }
-    response = requests.post(url=base_url + "projects", json=request_body, headers={"Authorization": token})
-    project1 = Project.from_json(response.content.decode())
-    request_body = {
-        "title": "project 2",
-        "workspaceId": str(workspace_id)
-    }
-    response = requests.post(url=base_url + "projects", json=request_body, headers={"Authorization": token})
-    project2 = Project.from_json(response.content.decode())
-
-    created_resources[project1._id] = Collection.PROJECT
-    created_resources[project2._id] = Collection.PROJECT
-
+    project1 = create_project_fixture(workspace_id=workspace_id, title="project1", token=token)
+    project2 = create_project_fixture(workspace_id=workspace_id, title="project2", token=token)
     return [project1, project2]
-
 
 def add_users_to_workspace_fixture(workspace_id: str, users: list):
     for user in users:
@@ -167,6 +164,39 @@ def create_workspace_with_users_and_team_fixture(token: str):
     workspace_with_users["team"] = team
     return workspace_with_users
 
+def create_workspaces_with_users_and_teams_fixture(token: str):
+    user = create_dummy_user_with_token_fixture()
+
+    workspace = create_workspace_fixture(token)
+    workspace2 = create_workspace_fixture(token)
+
+    add_users_to_workspace_fixture(workspace_id=str(workspace.id), users=[user["user"]])
+    add_users_to_workspace_fixture(workspace_id=str(workspace2.id), users=[user["user"]])
+
+    team1 = create_team_fixture(token, str(workspace.id))
+    team2 = create_team_fixture(token, str(workspace.id))
+    team3 = create_team_fixture(token, str(workspace2.id))
+    team4 = create_team_fixture(token, str(workspace2.id))
+
+    add_users_to_team(token, team_id=str(team1.id), users=[user["user"]])
+    add_users_to_team(token, team_id=str(team2.id), users=[user["user"]])
+    add_users_to_team(token, team_id=str(team3.id), users=[user["user"]])
+    add_users_to_team(token, team_id=str(team4.id), users=[user["user"]])
+
+    return_object = {
+        "workspaces": [workspace, workspace2],
+        "user": user["user"],
+        "token": user["token"],
+        "teams": [team1, team2, team3, team4]
+    }
+
+    return return_object
+
+def create_workspace_with_project_fixture(token: str):
+    workspace_with_users = create_workspace_with_users_fixture(token)
+    workspace_project = create_project_fixture(workspace_id=str(workspace_with_users["workspace"].id), title="some project title", token=token)
+    workspace_with_users["project"] = workspace_project
+    return workspace_with_users
 
 def create_workspace_with_users_and_projects_fixture(token: str):
     workspace_with_users = create_workspace_with_users_fixture(token)
@@ -174,6 +204,12 @@ def create_workspace_with_users_and_projects_fixture(token: str):
     workspace_with_users["projects"] = workspace_projects
     return workspace_with_users
 
+def create_workspace_with_projects_and_teams_fixture(token: str):
+    to_return = create_workspace_with_users_and_projects_fixture(token)
+    team1 = create_team_fixture(token=token, workspaceId=str(to_return["workspace"].id))
+    team2 = create_team_fixture(token=token, workspaceId=str(to_return["workspace"].id))
+    to_return["teams"] = [team1, team2]
+    return to_return
 
 def make_user_invitations_fixture(token: str, user: User):
     dummy_user = create_dummy_user_with_token_fixture()
@@ -211,3 +247,10 @@ def remove_user_workspace_permission(workspace_id: str, permission: WorkspacePer
         "permissions": permissions
     }
     requests.put(url=base_url + "workspaces/" + workspace_id + "/" + user_id + "/permissions", json=request_body, headers={"Authorization": token})
+
+def remove_project_manager_check_from_user(project_id: ObjectId, user_id: ObjectId):
+    project = project_service.get(project_id=project_id)
+    for user in project.users:
+        if user.userId == user_id:
+            user.isProjectManager = False
+    project_service.update_project(project)

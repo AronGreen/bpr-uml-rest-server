@@ -2,11 +2,9 @@ from bpr_data.models.project import ProjectUser, ProjectTeam
 from flask import Blueprint, g, request, abort, Response
 from bpr_data.models.project import Project
 from bpr_data.models.response import ApiResponse
-from src.services import project_service
 from bpr_data.models.permission import WorkspacePermission
-import src.services.permission_service as permission_service
 from bson import ObjectId
-
+from src.services import permission_service, project_service
 api = Blueprint('projects_api', __name__)
 
 
@@ -271,6 +269,4 @@ def get_project_user(projectId: str):
         404:
           description: Project not found
       """
-    return Response(status=200, response=ApiResponse(
-        response=project_service.get_project_user(project_id=ObjectId(projectId), firebase_id=g.firebase_id)).as_json(),
-                    mimetype="application/json")
+    return Response(status=200, response=project_service.get_project_user(project_id=ObjectId(projectId), firebase_id=g.firebase_id).as_json(), mimetype="application/json")
