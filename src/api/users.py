@@ -36,10 +36,6 @@ def ensure_user_exists():
                 example: asdfagawreg
       """
     try:
-        user = users_service.get_user_by_firebase_id(g.firebase_id)
-        if user is not None:
-            return Response(user.as_json(), mimetype="application/json")
-
         user = users_service.add_user(User(
             _id=None,
             firebaseId=g.firebase_id,

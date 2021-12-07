@@ -20,6 +20,6 @@ def check_permissions(firebase_id: str, workspace_id: ObjectId, permissions: lis
 
 def check_manage_project(firebase_id: str, project_id: ObjectId):
     user=project_service.get_project_user(firebase_id=firebase_id, project_id=project_id)
-    if user["isProjectManager"] is False:
+    if user.isProjectManager is False:
         abort(403, "Missing permissions")
 

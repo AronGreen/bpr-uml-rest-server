@@ -36,7 +36,9 @@ def get_user_name(userId: str) -> str:
 
 
 def add_user(user: User) -> User:
-    # TODO: Check if user already exists.
+    existing_user = get_user_by_firebase_id(user.firebaseId)
+    if existing_user is not None:
+        return existing_user
     inserted = db.insert(collection, user)
     if inserted is not None:
         return User.from_dict(inserted)

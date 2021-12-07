@@ -1,7 +1,6 @@
 import pytest
 import requests
 from bson import ObjectId
-import json
 
 from bpr_data.models.workspace import Workspace
 from bpr_data.models.project import Project, ProjectTeam, ProjectUser
@@ -17,7 +16,7 @@ repo = Repository.get_instance(**settings.MONGO_TEST_CONN)
 
 created_resources = {}
 port_no = str(settings.APP_PORT)
-base_url = "http://" + settings.APP_HOST + ":" + port_no + "/"
+base_url = "http://" + settings.APP_HOST + ":" + port_no + "/projects"
 
 
 @pytest.fixture(autouse=True)
@@ -32,47 +31,24 @@ def before_test():
 
 @pytest.fixture
 def create_workspace_fixture() -> Workspace:
-    return util.create_workspace_fixture(token)
-
+    return util.create_workspace_fixture(user.firebaseId)
 
 @pytest.fixture
-def create_projects_fixture() -> list:
-    workspace = util.create_workspace_fixture(token)
-    projects = util.create_projects_fixture(workspace_id=workspace.id, token=token)
-
-    project3 = Project(
-        _id=None,
-        title="some title",
-        workspaceId=ObjectId(workspace.id),
-        teams=list(),
-        users=[])
-    project3 = Project.from_dict(repo.insert(Collection.PROJECT, project3))
-
-    workspace2 = util.create_workspace_fixture(token)
-    project4 = Project(
-        _id=None,
-        title="some title",
-        workspaceId=ObjectId(workspace2.id),
-        teams=list(),
-        users=[user.id])
-    project4 = Project.from_dict(repo.insert(Collection.PROJECT, project4))
-    created_resources[project3._id] = Collection.PROJECT
-    created_resources[project4._id] = Collection.PROJECT
-
-    projects.extend([project3, project4])
-    return projects
+def create_project_fixture() -> list:
+    workspace = util.create_workspace_fixture(user.firebaseId)
+    return util.create_project_fixture(workspace_id=workspace.id, title="test project", user_firebase_id=user.firebaseId)
 
 @pytest.fixture
 def create_workspace_with_project_fixture():
-    return util.create_workspace_with_project_fixture(token=token)
+    return util.create_workspace_with_project_fixture(user_firebase_id=user.firebaseId)
 
 @pytest.fixture
 def create_workspace_with_users_and_projects_fixture():
-    return util.create_workspace_with_users_and_projects_fixture(token)
+    return util.create_workspace_with_users_and_projects_fixture(user_firebase_id=user.firebaseId)
 
 @pytest.fixture 
 def create_workspace_with_projects_and_teams_fixture():
-    return util.create_workspace_with_projects_and_teams_fixture(token)
+    return util.create_workspace_with_projects_and_teams_fixture(user_firebase_id=user.firebaseId)
 
 @pytest.fixture
 def create_dummy_user_with_token_fixture() -> dict:
@@ -81,8 +57,8 @@ def create_dummy_user_with_token_fixture() -> dict:
 def remove_project_manager_check_from_user(project_id: ObjectId) -> dict:
     return util.remove_project_manager_check_from_user(project_id=project_id, user_id=user.id)
 
-def remove_user_workspace_permission(workspace_id: str, permission: WorkspacePermission):
-    util.remove_user_workspace_permission(workspace_id=workspace_id, permission=permission, user_id=str(user.id), token=token)
+def remove_user_workspace_permission(workspace_id: ObjectId, permission: WorkspacePermission):
+    util.remove_user_workspace_permission(workspace_id=workspace_id, permission=permission, user_id=user.id)
 
 def test_create_project(create_workspace_fixture):
     project_title = "test project"
@@ -90,7 +66,7 @@ def test_create_project(create_workspace_fixture):
         "title": project_title,
         "workspaceId": str(create_workspace_fixture.id)
     }
-    response = requests.post(url=base_url + "projects", json=request_body, headers={"Authorization": token})
+    response = requests.post(url=base_url, json=request_body, headers={"Authorization": token})
     assert response.status_code == 200
     project = Project.from_json(response.content.decode())
     project.users = ProjectUser.from_dict_list(project.users)
@@ -100,13 +76,13 @@ def test_create_project(create_workspace_fixture):
     created_resources[project._id] = Collection.PROJECT
 
 def test_create_project_without_permission(create_workspace_fixture):
-    remove_user_workspace_permission(str(create_workspace_fixture.id), WorkspacePermission.MANAGE_WORKSPACE)
+    remove_user_workspace_permission(create_workspace_fixture.id, WorkspacePermission.MANAGE_WORKSPACE)
     project_title = "test project1"
     request_body = {
         "title": project_title,
         "workspaceId": str(create_workspace_fixture.id)
     }
-    response = requests.post(url=base_url + "projects", json=request_body, headers={"Authorization": token})
+    response = requests.post(url=base_url, json=request_body, headers={"Authorization": token})
     assert response.status_code == 403
     assert repo.find_one(collection=Collection.PROJECT, name=project_title) == None
 
@@ -116,29 +92,9 @@ def test_create_project_without_being_in_workspace(create_workspace_fixture, cre
         "title": project_title,
         "workspaceId": str(create_workspace_fixture.id)
     }
-    response = requests.post(url=base_url + "projects", json=request_body, headers={"Authorization": create_dummy_user_with_token_fixture["token"]})
+    response = requests.post(url=base_url, json=request_body, headers={"Authorization": create_dummy_user_with_token_fixture["token"]})
     assert response.status_code == 403
     assert repo.find_one(collection=Collection.PROJECT, name=project_title) == None
-
-def test_get_projects_for_workspace(create_projects_fixture):
-    response = requests.get(url=base_url + "projects/workspace/" + create_projects_fixture[0].workspaceId,
-                            headers={"Authorization": token})
-    assert response.status_code == 200
-    result = Project.from_json_list(response.content.decode())
-    for project in result:
-        project.users = ProjectUser.from_dict_list(project.users)
-    assert len(result) == 2
-    assert result[0].id == create_projects_fixture[0].id
-    assert result[1].id == create_projects_fixture[1].id
-    assert create_projects_fixture[2].id not in [project.id for project in result]
-    assert create_projects_fixture[3].id not in [project.id for project in result]
-
-def test_get_projects_for_workspace_user_not_in_project(create_projects_fixture, create_dummy_user_with_token_fixture):
-    response = requests.get(url=base_url + "projects/workspace/" + create_projects_fixture[0].workspaceId,
-                            headers={"Authorization": create_dummy_user_with_token_fixture["token"]})
-    assert response.status_code == 200
-    result = json.loads(response.content.decode())
-    assert len(result) == 0
 
 def test_add_users_to_project(create_workspace_with_users_and_projects_fixture):
     user_1 = ProjectUser(userId=str(create_workspace_with_users_and_projects_fixture["users"][0].id), isEditor=True, isProjectManager=False)
@@ -148,7 +104,7 @@ def test_add_users_to_project(create_workspace_with_users_and_projects_fixture):
         "users": ProjectUser.as_dict_list([user_1, user_2])
     }
 
-    response = requests.post(url=base_url + "/projects/" + str(
+    response = requests.post(url=base_url + "/" + str(
         create_workspace_with_users_and_projects_fixture["projects"][0].id) + "/users", json=request_body,
                              headers={"Authorization": token})
     assert response.status_code == 200
@@ -174,7 +130,7 @@ def test_add_duplicate_users_to_project(create_workspace_with_users_and_projects
         "users": ProjectUser.as_dict_list([user_1, user_1])
     }
 
-    response = requests.post(url=base_url + "/projects/" + str(
+    response = requests.post(url=base_url + "/" + str(
         create_workspace_with_users_and_projects_fixture["projects"][0].id) + "/users", json=request_body,
                              headers={"Authorization": token})
     assert response.status_code == 400
@@ -185,17 +141,17 @@ def test_add_duplicate_users_to_project(create_workspace_with_users_and_projects
     assert user_1.userId not in [user.userId for user in project.users]
 
 
-def test_add_existing_user_to_project(create_projects_fixture):
+def test_add_existing_user_to_project(create_project_fixture):
     user_1 = ProjectUser(userId=str(user.id), isEditor=False, isProjectManager=False)
     request_body = {
         "users": ProjectUser.as_dict_list([user_1])
     }
 
-    response = requests.post(url=base_url + "/projects/" + str(create_projects_fixture[0].id) + "/users",
+    response = requests.post(url=base_url + "/" + str(create_project_fixture.id) + "/users",
                              json=request_body, headers={"Authorization": token})
     assert response.status_code == 400
 
-    project = project_service.get(create_projects_fixture[0].id)
+    project = project_service.get(create_project_fixture.id)
 
     assert len(project.users) == 1
     assert project.users[0].isEditor == True
@@ -206,7 +162,7 @@ def test_replace_users_in_project(create_workspace_with_users_and_projects_fixtu
     request_body = {
         "users": ProjectUser.as_dict_list([user_1])
     }
-    response = requests.put(url=base_url + "/projects/" + str(
+    response = requests.put(url=base_url + "/" + str(
         create_workspace_with_users_and_projects_fixture["projects"][0].id) + "/users", json=request_body,
                              headers={"Authorization": token})
     assert response.status_code == 200
@@ -221,7 +177,7 @@ def test_replace_users_in_project_without_permissions(create_workspace_with_user
     request_body = {
         "users": ProjectUser.as_dict_list([user_1])
     }
-    response = requests.put(url=base_url + "/projects/" + str(
+    response = requests.put(url=base_url + "/" + str(
         create_workspace_with_users_and_projects_fixture["projects"][0].id) + "/users", json=request_body,
                              headers={"Authorization": token})
     assert response.status_code == 403
@@ -234,7 +190,7 @@ def test_replace_teams_in_project(create_workspace_with_projects_and_teams_fixtu
     request_body = {
         "teams": ProjectTeam.as_dict_list([team_1, team_2])
     }
-    response = requests.put(url=base_url + "/projects/" + str(
+    response = requests.put(url=base_url + "/" + str(
         create_workspace_with_projects_and_teams_fixture["projects"][0].id) + "/teams", json=request_body,
                              headers={"Authorization": token})
     assert response.status_code == 200
@@ -251,49 +207,60 @@ def test_replace_teams_in_project_without_permissions(create_workspace_with_proj
     request_body = {
         "teams": ProjectTeam.as_dict_list([team_1, team_2])
     }
-    response = requests.put(url=base_url + "/projects/" + str(
+    response = requests.put(url=base_url + "/" + str(
         create_workspace_with_projects_and_teams_fixture["projects"][0].id) + "/teams", json=request_body,
                              headers={"Authorization": token})
     assert response.status_code == 403
     project = project_service.get(create_workspace_with_projects_and_teams_fixture["projects"][0].id)
     assert len(project.teams) == 0
 
-def test_update_project_name(create_projects_fixture):
+def test_update_project_name(create_project_fixture):
     new_title = "new project title"
     request_body = {
        "title": new_title 
     }
-    response = requests.put(url=base_url + "/projects/" + str(create_projects_fixture[0].id), json=request_body, headers={"Authorization": token})
+    response = requests.put(url=base_url + "/" + str(create_project_fixture.id), json=request_body, headers={"Authorization": token})
     assert response.status_code == 200
     project = Project.from_json(response.content.decode())
     assert project.title == new_title
 
-def test_update_project_name_without_permissions(create_projects_fixture):
-    remove_project_manager_check_from_user(create_projects_fixture[0].id)
+def test_update_project_name_without_permissions(create_project_fixture):
+    remove_project_manager_check_from_user(create_project_fixture.id)
     new_title = "bad title given by bad user"
     request_body = {
        "title": new_title 
     }
-    response = requests.put(url=base_url + "/projects/" + str(create_projects_fixture[0].id), json=request_body, headers={"Authorization": token})
+    response = requests.put(url=base_url + "/" + str(create_project_fixture.id), json=request_body, headers={"Authorization": token})
     assert response.status_code == 403
-    project = project_service.get(create_projects_fixture[0].id)
+    project = project_service.get(create_project_fixture.id)
     assert project.title != new_title
 
-def test_delete_project(create_projects_fixture):
-    response = requests.delete(url=base_url + "/projects/" + str(create_projects_fixture[0].id), headers={"Authorization": token})
+def test_delete_project(create_project_fixture):
+    response = requests.delete(url=base_url + "/" + str(create_project_fixture.id), headers={"Authorization": token})
     assert response.status_code == 200
-    assert repo.find_one(collection=Collection.PROJECT, _id=create_projects_fixture[0].id) == None
+    assert repo.find_one(collection=Collection.PROJECT, _id=create_project_fixture.id) == None
 
-def test_delete_project_without_permissions(create_projects_fixture):
-    remove_project_manager_check_from_user(create_projects_fixture[0].id)
-    response = requests.delete(url=base_url + "/projects/" + str(create_projects_fixture[0].id), headers={"Authorization": token})
+def test_delete_project_without_permissions(create_project_fixture):
+    remove_project_manager_check_from_user(create_project_fixture.id)
+    response = requests.delete(url=base_url + "/" + str(create_project_fixture.id), headers={"Authorization": token})
     assert response.status_code == 403
-    assert repo.find_one(collection=Collection.PROJECT, _id=create_projects_fixture[0].id) != None
+    assert repo.find_one(collection=Collection.PROJECT, _id=create_project_fixture.id) != None
 
 def test_get_project_user(create_workspace_with_project_fixture):
-    response = requests.get(url=base_url + "/projects/" + str(create_workspace_with_project_fixture["project"].id) + "/user", headers={"Authorization": token})
+    response = requests.get(url=base_url + "/" + str(create_workspace_with_project_fixture["project"].id) + "/user", headers={"Authorization": token})
     assert response.status_code == 200
     web_project_user = WebProjectUser.from_json(response.content.decode())
     assert web_project_user.id == user.id
     assert web_project_user.isEditor == True
     assert web_project_user.isProjectManager == True
+
+def test_get_project(create_workspace_with_project_fixture):
+    response = requests.get(url=base_url + "/" + str(create_workspace_with_project_fixture["project"].id), headers={"Authorization": token})
+    assert response.status_code == 200
+    project = Project.from_json(response.content.decode())
+    assert project.id == create_workspace_with_project_fixture["project"].id
+    assert project.users[0]["user"]["_id"] == str(user.id)
+
+def test_get_project_user_not_in_project(create_workspace_with_project_fixture, create_dummy_user_with_token_fixture):
+    response = requests.get(url=base_url + "/" + str(create_workspace_with_project_fixture["project"].id), headers={"Authorization": create_dummy_user_with_token_fixture["token"]})
+    assert response.status_code == 403

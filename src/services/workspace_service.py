@@ -23,8 +23,8 @@ db = Repository.get_instance(**settings.MONGO_CONN)
 collection = Collection.WORKSPACE
 
 
-def create_workspace(workspace: Workspace) -> Workspace:
-    creator = User.from_dict(db.find_one(Collection.USER, firebaseId=g.firebase_id))
+def create_workspace(workspace: Workspace, firebase_id: str) -> Workspace:
+    creator = users_service.get_user_by_firebase_id(firebase_id=firebase_id)
     workspace_user = WorkspaceUser(userId = creator.id, permissions=list(WorkspacePermission))
     workspace.users = [workspace_user]
     created_workspace = db.insert(collection, workspace)
