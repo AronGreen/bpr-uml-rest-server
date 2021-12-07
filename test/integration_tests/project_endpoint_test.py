@@ -7,6 +7,7 @@ from bpr_data.models.workspace import Workspace
 from bpr_data.models.project import Project, ProjectTeam, ProjectUser
 from bpr_data.repository import Repository, Collection
 from bpr_data.models.permission import WorkspacePermission
+from src.models.web_project_user import WebProjectUser
 
 import src.services.project_service as project_service
 import endpoint_test_util as util
@@ -61,6 +62,9 @@ def create_projects_fixture() -> list:
     projects.extend([project3, project4])
     return projects
 
+@pytest.fixture
+def create_workspace_with_project_fixture():
+    return util.create_workspace_with_project_fixture(token=token)
 
 @pytest.fixture
 def create_workspace_with_users_and_projects_fixture():
@@ -285,3 +289,11 @@ def test_delete_project_without_permissions(create_projects_fixture):
     response = requests.delete(url=base_url + "/projects/" + str(create_projects_fixture[0].id), headers={"Authorization": token})
     assert response.status_code == 403
     assert repo.find_one(collection=Collection.PROJECT, _id=create_projects_fixture[0].id) != None
+
+def test_get_project_user(create_workspace_with_project_fixture):
+    response = requests.get(url=base_url + "/projects/" + str(create_workspace_with_project_fixture["project"].id) + "/user", headers={"Authorization": token})
+    assert response.status_code == 200
+    web_project_user = WebProjectUser.from_json(response.content.decode())
+    assert web_project_user.id == user.id
+    assert web_project_user.isEditor == True
+    assert web_project_user.isProjectManager == True

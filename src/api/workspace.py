@@ -3,7 +3,7 @@ from flask import Blueprint, request, g, abort
 from flask.wrappers import Response
 
 from bpr_data.models.invitation import Invitation
-from bpr_data.models.user import User
+from bpr_data.models.project import Project
 from bpr_data.models.team import Team
 from bpr_data.models.workspace import Workspace
 from bpr_data.models.response import ApiResponse
@@ -406,3 +406,51 @@ def get_workspace_user(workspaceId):
                     response=workspace_service.get_workspace_user(firebase_id=g.firebase_id,
                                                                   workspace_id=ObjectId(workspaceId)).as_json(),
                     mimetype="application/json")
+
+@api.route("/<workspaceId>/projects", methods=['GET'])
+def get_workspace_user_projects(workspaceId: str):
+    """
+      Get projects for current user and workspace
+      ---
+      tags:
+        - projects
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+      responses:
+        200:
+          description: A JSON array of projects
+          schema:
+            type: object
+            properties:
+              _id:
+                type: str
+                example: '61901338d13eab96f1e5d153'
+              title:
+                type: string
+                example: AwesomeCO's workspace
+              users:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    userId:
+                      type: str
+                      example: '61901338d13eab96f1e5d153'
+                    isEditor:
+                      type: boolean
+              teams:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    teamId:
+                      type: str
+                      example: '61901338d13eab96f1e5d153'
+                    isEditor:
+                      type: boolean
+      """
+    user_id = users_service.get_user_by_firebase_id(g.firebase_id).id
+    result = project_service.get_user_projects(workspaceId, user_id)
+    return Response(Project.as_json_list(result), mimetype="application/json")

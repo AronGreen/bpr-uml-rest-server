@@ -114,26 +114,20 @@ def create_dummy_user_with_token_fixture():
     }
     return user
 
+def create_project_fixture(workspace_id: str, title: str, token: str) -> Project:
+    request_body = {
+        "title": title,
+        "workspaceId": str(workspace_id)
+    }
+    response = requests.post(url=base_url + "projects", json=request_body, headers={"Authorization": token})
+    project = Project.from_json(response.content.decode())
+    created_resources[project._id] = Collection.PROJECT
+    return project
 
 def create_projects_fixture(workspace_id: str, token: str) -> list:
-    request_body = {
-        "title": "project 1",
-        "workspaceId": str(workspace_id)
-    }
-    response = requests.post(url=base_url + "projects", json=request_body, headers={"Authorization": token})
-    project1 = Project.from_json(response.content.decode())
-    request_body = {
-        "title": "project 2",
-        "workspaceId": str(workspace_id)
-    }
-    response = requests.post(url=base_url + "projects", json=request_body, headers={"Authorization": token})
-    project2 = Project.from_json(response.content.decode())
-
-    created_resources[project1._id] = Collection.PROJECT
-    created_resources[project2._id] = Collection.PROJECT
-
+    project1 = create_project_fixture(workspace_id=workspace_id, title="project1", token=token)
+    project2 = create_project_fixture(workspace_id=workspace_id, title="project2", token=token)
     return [project1, project2]
-
 
 def add_users_to_workspace_fixture(workspace_id: str, users: list):
     for user in users:
@@ -197,6 +191,12 @@ def create_workspaces_with_users_and_teams_fixture(token: str):
     }
 
     return return_object
+
+def create_workspace_with_project_fixture(token: str):
+    workspace_with_users = create_workspace_with_users_fixture(token)
+    workspace_project = create_project_fixture(workspace_id=str(workspace_with_users["workspace"].id), title="some project title", token=token)
+    workspace_with_users["project"] = workspace_project
+    return workspace_with_users
 
 def create_workspace_with_users_and_projects_fixture(token: str):
     workspace_with_users = create_workspace_with_users_fixture(token)
