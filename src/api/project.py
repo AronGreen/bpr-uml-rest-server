@@ -267,7 +267,7 @@ def get_project_user(projectId: str):
         404:
           description: Project not found
       """
-  return Response(status=200, response=project_service.get_project_user(project_id=ObjectId(projectId), firebase_id=g.firebase_id).as_json(), mimetype="application/json")
+    return Response(status=200, response=project_service.get_project_user(project_id=ObjectId(projectId), firebase_id=g.firebase_id).as_json(), mimetype="application/json")
 
 @api.route("/workspace/<workspaceId>", methods=['GET'])
 def get_workspace_user_projects(workspaceId: str):
