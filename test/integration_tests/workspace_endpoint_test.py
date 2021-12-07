@@ -83,7 +83,8 @@ def create_projects_fixture() -> list:
         title="some title",
         workspaceId=ObjectId(workspace.id),
         teams=list(),
-        users=[])
+        users=[],
+        folders=[])
     project3 = Project.from_dict(repo.insert(Collection.PROJECT, project3))
 
     workspace2 = util.create_workspace_fixture(user.firebaseId)
@@ -92,7 +93,8 @@ def create_projects_fixture() -> list:
         title="some title",
         workspaceId=ObjectId(workspace2.id),
         teams=list(),
-        users=[user.id])
+        users=[user.id],
+        folders=[])
     project4 = Project.from_dict(repo.insert(Collection.PROJECT, project4))
     created_resources[project3._id] = Collection.PROJECT
     created_resources[project4._id] = Collection.PROJECT
