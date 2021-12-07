@@ -37,7 +37,8 @@ def create_project():
          description: Insufficient data in request
    """
     request_data = request.get_json()
-    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(request_data['workspaceId']), permissions=[WorkspacePermission.MANAGE_WORKSPACE])
+    permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(request_data['workspaceId']),
+                                         permissions=[WorkspacePermission.MANAGE_WORKSPACE])
     try:
         create_result = project_service.create_project(
             title=request_data['title'],
@@ -144,16 +145,17 @@ def replace_users(projectId: str):
         result = project_service.replace_users(
             project_id=ObjectId(projectId),
             users=ProjectUser.to_object_ids("userId", ProjectUser.from_dict_list(request_data['users']))
-            )
+        )
         return Response(result.as_json(), mimetype="application/json")
     except KeyError:
         abort(400, "Insufficient data in request body")
     except AttributeError:
         abort(404, "Project not found")
 
+
 @api.route("/<projectId>/teams", methods=['PUT'])
 def replace_teams(projectId: str):
-  """
+    """
     Replace all teams in project
     ---
     tags:
@@ -181,17 +183,18 @@ def replace_teams(projectId: str):
       400:
          description: Insufficient data in request
    """
-  permission_service.check_manage_project(firebase_id=g.firebase_id, project_id=projectId)
-  request_data = request.get_json()
-  try:
-    result = project_service.replace_teams(
-    project_id=ObjectId(projectId),
-    teams=ProjectTeam.to_object_ids("teamId", ProjectTeam.from_dict_list(request_data['teams']))
-    )
-    return Response(result.as_json(), mimetype="application/json")
-  except KeyError:
-    abort(400, "Insufficient data in request body")
-    
+    permission_service.check_manage_project(firebase_id=g.firebase_id, project_id=projectId)
+    request_data = request.get_json()
+    try:
+        result = project_service.replace_teams(
+            project_id=ObjectId(projectId),
+            teams=ProjectTeam.to_object_ids("teamId", ProjectTeam.from_dict_list(request_data['teams']))
+        )
+        return Response(result.as_json(), mimetype="application/json")
+    except KeyError:
+        abort(400, "Insufficient data in request body")
+
+
 @api.route("/<projectId>", methods=['PUT'])
 def update_project_name(projectId: str):
     """
@@ -221,13 +224,15 @@ def update_project_name(projectId: str):
     request_data = request.get_json()
     if 'title' in request_data:
         title = request_data['title']
-        return Response(status=200, response=Project.as_json(project_service.update_project_title(project_id=projectId, title=title)), mimetype="application/json")
+        return Response(status=200, response=Project.as_json(
+            project_service.update_project_title(project_id=projectId, title=title)), mimetype="application/json")
     else:
         return Response(status=400, response=ApiResponse(response="properties missing").as_json())
-        
+
+
 @api.route("/<projectId>", methods=['DELETE'])
 def delete_project(projectId: str):
-  """
+    """
       Delete project
       ---
       tags:
@@ -240,12 +245,14 @@ def delete_project(projectId: str):
         200:
           description: confirmation
       """
-  permission_service.check_manage_project(firebase_id=g.firebase_id, project_id=projectId)
-  return Response(status=200, response=ApiResponse(response=project_service.delete_project(project_id=ObjectId(projectId))).as_json(), mimetype="application/json")
+    permission_service.check_manage_project(firebase_id=g.firebase_id, project_id=projectId)
+    return Response(status=200, response=ApiResponse(
+        response=project_service.delete_project(project_id=ObjectId(projectId))).as_json(), mimetype="application/json")
+
 
 @api.route("/<projectId>/user", methods=['GET'])
 def get_project_user(projectId: str):
-  """
+    """
       Get project user
       ---
       tags:
@@ -257,7 +264,8 @@ def get_project_user(projectId: str):
       responses:
         200:
           description: user
-        404: Project not found
+        404:
+          description: Project not found
       """
   return Response(status=200, response=project_service.get_project_user(project_id=ObjectId(projectId), firebase_id=g.firebase_id).as_json(), mimetype="application/json")
 
