@@ -12,6 +12,7 @@ import settings as settings
 
 from src.api import \
     project as project_api, \
+    project_contents as project_contents_api, \
     teams as teams_api, \
     users as users_api, \
     workspace as workspace_api, \
@@ -21,6 +22,7 @@ app = Flask(__name__)
 cors = CORS(app)
 
 app.register_blueprint(project_api.api, url_prefix='/projects')
+app.register_blueprint(project_contents_api.api, url_prefix='/projects/<project_id>/contents')
 app.register_blueprint(teams_api.api, url_prefix='/teams')
 app.register_blueprint(users_api.api, url_prefix='/users')
 app.register_blueprint(workspace_api.api, url_prefix='/workspaces')

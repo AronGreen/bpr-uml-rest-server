@@ -18,6 +18,7 @@ db = Repository.get_instance(**settings.MONGO_CONN)
 
 collection = Collection.PROJECT
 
+
 def get_project_for_user(firebase_id: str, project_id: ObjectId):
     project = get(project_id=project_id)
     if project is None:
@@ -27,6 +28,7 @@ def get_project_for_user(firebase_id: str, project_id: ObjectId):
         if project_user.userId == user.id:
             return project
     abort(403, description="User doesn't have access to the project")
+
 
 def get(project_id: ObjectId) -> Project:
     find_result = db.find_one(collection, _id=project_id)
@@ -69,8 +71,7 @@ def update_project(project: Project) -> Project:
 
 
 def delete_project(project_id: str | ObjectId) -> bool:
-    db.delete(collection, id=project_id)
-    return "ok"
+    return db.delete(collection, id=project_id)
 
 
 def add_users(project_id: ObjectId, users: list) -> Project:
@@ -103,6 +104,7 @@ def replace_users(project_id: ObjectId | ObjectId, users: list) -> Project:
     db.update(Collection.PROJECT, project)
     return get_full_project(project_id)
 
+
 def get_full_project_for_user(project_id: ObjectId, firebase_id: str):
     project = get_full_project(project_id)
     if project is None:
@@ -112,6 +114,7 @@ def get_full_project_for_user(project_id: ObjectId, firebase_id: str):
         if project_user["userId"] == user.id:
             return project
     abort(403, description="User doesn't have access to project")
+
 
 def get_full_project(project_id: str | ObjectId) -> Project:
     pipeline = [
@@ -161,13 +164,16 @@ def __make_unwind_step(path: str, preserve_null_and_empty_arrays: bool = True) -
             }
     }
 
+
 def replace_teams(project_id: ObjectId, teams: list) -> Project:
     project = get(project_id=project_id)
     list_util.ensure_no_duplicates(teams, "teamId")
-    teams_service.check_teams_belong_to_workspace(workspace_id=project.workspaceId, team_ids=[team.teamId for team in teams])
+    teams_service.check_teams_belong_to_workspace(workspace_id=project.workspaceId,
+                                                  team_ids=[team.teamId for team in teams])
     project.teams = teams
     db.update(Collection.PROJECT, project)
     return get_full_project(project_id)
+
 
 def update_project_title(project_id: str, title: str):
     project = get(project_id=ObjectId(project_id))
@@ -176,6 +182,7 @@ def update_project_title(project_id: str, title: str):
     project.title = title
     db.update(collection=collection, item=project)
     return get(project_id=ObjectId(project_id))
+
 
 def get_project_user(project_id: ObjectId, firebase_id: str):
     project = get_full_project(project_id=project_id)
