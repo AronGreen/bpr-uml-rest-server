@@ -244,9 +244,11 @@ def delete_project(projectId: str):
         200:
           description: confirmation
       """
-    permission_service.check_manage_project(firebase_id=g.firebase_id, project_id=projectId)
+    permission_service.check_manage_project(firebase_id=g.firebase_id, project_id=ObjectId(projectId))
+    delete_result = project_service.delete_project(project_id=ObjectId(projectId))
+    resp = 'ok' if delete_result else 'not ok'
     return Response(status=200, response=ApiResponse(
-        response=project_service.delete_project(project_id=ObjectId(projectId))).as_json(), mimetype="application/json")
+        response='ok').as_json(), mimetype="application/json")
 
 
 @api.route("/<projectId>/user", methods=['GET'])

@@ -31,6 +31,7 @@ def create_workspace(workspace: Workspace, firebase_id: str) -> Workspace:
     if created_workspace is not None:
         return Workspace.from_dict(created_workspace)
 
+
 def get_workspace_for_user(workspace_id: ObjectId, firebase_id: str) -> Workspace:
     workspace = get_workspace(workspace_id=workspace_id)
     if workspace is None:
@@ -40,6 +41,7 @@ def get_workspace_for_user(workspace_id: ObjectId, firebase_id: str) -> Workspac
         if workspace_user.userId == user.id:
             return workspace
     abort(403, description="User doesn't have access to the workspace")
+
 
 def get_workspace_with_users_for_user(workspace_id: ObjectId, firebase_id: str) -> Workspace:
     workspace = get_workspace_with_users(workspace_id=workspace_id)
@@ -51,7 +53,8 @@ def get_workspace_with_users_for_user(workspace_id: ObjectId, firebase_id: str) 
             return workspace
     abort(403, description="User doesn't have access to the workspace")
 
-def get_workspace_with_users(workspace_id: ObjectId) -> Team:
+
+def get_workspace_with_users(workspace_id: ObjectId) -> Workspace:
     pipeline = [
         {'$match': {'_id': workspace_id}},
         __make_unwind_step('$users'),
@@ -75,6 +78,7 @@ def get_workspace_with_users(workspace_id: ObjectId) -> Team:
     if len(results) > 0:
         return Workspace.from_dict(results[0])
 
+
 def __make_unwind_step(path: str, preserve_null_and_empty_arrays: bool = True) -> dict:
     return {
         '$unwind':
@@ -84,6 +88,7 @@ def __make_unwind_step(path: str, preserve_null_and_empty_arrays: bool = True) -
             }
     }
 
+
 def get_workspace(workspace_id: ObjectId) -> Workspace:
     find_result = db.find_one(collection, _id=workspace_id)
     if find_result is not None:
@@ -92,6 +97,7 @@ def get_workspace(workspace_id: ObjectId) -> Workspace:
         return workspace
     else:
         abort(404, description="Workspace not found")
+
 
 def get_user_workspaces(firebase_id: str) -> list:
     # TODO: filter so only current users workspaces are present
@@ -146,6 +152,7 @@ def respond_to_invitation(invitation_id: str | ObjectId, accepted: bool) -> str:
     invitation_service.delete_invitation(invitation_id)
     return return_text
 
+
 def add_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) -> bool:
     if not are_users_in_workspace(ObjectId(workspace_id), [ObjectId(user_id)]):
         return db.push(
@@ -154,6 +161,7 @@ def add_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) ->
             field_name='users',
             item=WorkspaceUser(userId=user_id, permissions=[])
         )
+
 
 def remove_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) -> bool:
     workspace = get_workspace(workspace_id)
@@ -164,14 +172,16 @@ def remove_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId)
             return "ok"
     abort(400, description="user not in workspace")
 
+
 def get_workspace_users(workspace_id: ObjectId, firebase_id: str) -> list:
-    workspace=get_workspace_with_users(workspace_id)
+    workspace = get_workspace_with_users(workspace_id)
     user = users_service.get_user_by_firebase_id(firebase_id=firebase_id)
     if user.id not in [user["userId"] for user in workspace.users]:
         abort(403, description="User does not have access to the workspace")
     if workspace.users is None:
         return list()
     return [WebWorkspaceUser.from_workspace_user(container) for container in workspace.users]
+
 
 def are_users_in_workspace(workspace_id: ObjectId, user_ids: list):
     workspace = get_workspace(workspace_id)
@@ -181,9 +191,11 @@ def are_users_in_workspace(workspace_id: ObjectId, user_ids: list):
         else:
             return False
 
+
 def get_teams(workspace_id: str, firebase_id: str) -> list:
     get_workspace_for_user(workspace_id=workspace_id, firebase_id=firebase_id)
     return Team.from_dict_list(db.find(collection=Collection.TEAM, workspaceId=ObjectId(workspace_id)))
+
 
 def update_workspace_name(workspace_id: str, name: str):
     workspace = get_workspace(workspace_id=ObjectId(workspace_id))
@@ -193,9 +205,11 @@ def update_workspace_name(workspace_id: str, name: str):
     db.update(collection=collection, item=workspace)
     return get_workspace(workspace_id=ObjectId(workspace_id))
 
+
 def delete_workspace(workspace_id: ObjectId) -> bool:
     db.delete(collection, id=workspace_id)
     return "ok"
+
 
 def update_user_permissions(workspace_id: ObjectId, user_id: ObjectId, permissions: list):
     workspace = get_workspace(workspace_id=workspace_id)
@@ -208,7 +222,8 @@ def update_user_permissions(workspace_id: ObjectId, user_id: ObjectId, permissio
     db.update(collection=collection, item=workspace)
     return get_workspace(workspace_id=ObjectId(workspace_id))
 
-def get_workspace_user(firebase_id:str, workspace_id: ObjectId):
+
+def get_workspace_user(firebase_id: str, workspace_id: ObjectId):
     workspace = get_workspace(workspace_id=workspace_id)
     if workspace is None:
         abort(404, description="Workspace not found")
