@@ -163,7 +163,7 @@ def add_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) ->
         )
 
 
-def remove_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId) -> bool:
+def remove_workspace_user(workspace_id: ObjectId, user_id: ObjectId) -> bool:
     workspace = get_workspace(workspace_id)
     for user in workspace.users:
         if user.userId == user_id:
