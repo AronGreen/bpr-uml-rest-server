@@ -209,19 +209,12 @@ def remove_user_from_workspace(workspaceId: str, userId: str):
       ---
       tags:
         - workspaces
-        - users
       parameters:
-        - in: body
-          name: body
-          schema:
-            required:
-              - workspaceId
-              - userId
-            properties:
-              workspaceId:
-                type: string
-              userId:
-                type: string
+        - in: path
+          name: workspaceId
+          required: true
+          name: userId
+          required: true
       responses:
         200:
           description: User is removed
