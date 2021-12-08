@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from bpr_data.models.project import Project
 from bson import ObjectId
 from flask import g, abort
 
@@ -168,8 +169,12 @@ def remove_workspace_user(workspace_id: str | ObjectId, user_id: str | ObjectId)
     for user in workspace.users:
         if user.userId == user_id:
             workspace.users.remove(user)
-            db.update(collection=collection, item=workspace)
-            return "ok"
+
+            db.cleanup_relations(collection.PROJECT, 'users', {'userId': user_id})
+            db.cleanup_relations(collection.TEAM, 'users', {'userId': user_id})
+
+            return db.update(collection=collection, item=workspace)
+
     abort(400, description="user not in workspace")
 
 

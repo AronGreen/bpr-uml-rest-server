@@ -163,6 +163,7 @@ def get_workspace_users(workspaceId: str):
     result = workspace_service.get_workspace_users(workspace_id=ObjectId(workspaceId), firebase_id=g.firebase_id)
     return Response(WebWorkspaceUser.as_json_list(result), mimetype="application/json")
 
+
 @api.route("/invitation", methods=['POST'])
 def invite_user():
     """
@@ -231,9 +232,10 @@ def remove_user_from_workspace():
     permission_service.check_permissions(firebase_id=g.firebase_id, workspace_id=ObjectId(request_data['workspaceId']),
                                          permissions=[WorkspacePermission.MANAGE_WORKSPACE])
     if 'workspaceId' in request_data and 'userId' in request_data:
-        return Response(ApiResponse(workspace_service.remove_workspace_user(
-            ObjectId(request_data['workspaceId']),
-            ObjectId(request_data['userId']))).as_json(), status=200, mimetype="application/json")
+        user_deleted = workspace_service.remove_workspace_user(ObjectId(request_data['workspaceId']),
+                                                       ObjectId(request_data['userId']))
+        response = 'ok' if user_deleted else 'not ok'
+        return Response(ApiResponse(response).as_json(), status=200, mimetype="application/json")
     return abort(400, descriptioin="Workspace id and/or user id missing")
 
 
@@ -406,6 +408,7 @@ def get_workspace_user(workspaceId):
                     response=workspace_service.get_workspace_user(firebase_id=g.firebase_id,
                                                                   workspace_id=ObjectId(workspaceId)).as_json(),
                     mimetype="application/json")
+
 
 @api.route("/<workspaceId>/projects", methods=['GET'])
 def get_workspace_user_projects(workspaceId: str):

@@ -1,3 +1,4 @@
+from bpr_data.models.project import Project
 from bson.objectid import ObjectId
 from flask import abort
 
@@ -121,6 +122,7 @@ def update_team_name(team_id: ObjectId, name: str):
 
 def delete_team(team_id: ObjectId):
     db.delete(collection=collection, _id=team_id)
+    db.cleanup_relations(collection.PROJECT, 'teams', {'teamId': team_id})
     return "ok"
 
 
@@ -130,8 +132,10 @@ def check_teams_belong_to_workspace(team_ids: list, workspace_id: ObjectId):
         if team.workspaceId != workspace_id:
             abort(405)
 
+
 def get_teams_for_user(user_id: str) -> list:
     find_result = db.find(collection=collection, nested_conditions={'users.userId': user_id})
     if find_result is not None:
         return Team.from_dict_list(find_result)
-    else: return []
+    else:
+        return []

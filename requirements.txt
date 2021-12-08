@@ -1,6 +1,6 @@
 atomicwrites==1.4.0
 attrs==21.2.0
-bpr-uml-shared @ git+https://github.com/AronGreen/bpr-uml-shared.git@28edea5502e82a4c5896d51e518becdbe5892fa2
+bpr-uml-shared @ git+https://github.com/AronGreen/bpr-uml-shared.git@d26592b524eac1abcf8df0655467fe35e8b9a342
 CacheControl==0.12.6
 cachetools==4.2.4
 certifi==2021.5.30
