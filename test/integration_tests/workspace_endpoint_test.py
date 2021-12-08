@@ -242,11 +242,7 @@ def test_respond_to_invitation(invite_user_fixture):
 
 def test_remove_user_from_workspace(create_workspace_with_users_fixture):
     workspace_before_changes = workspace_service.get_workspace(workspace_id=create_workspace_with_users_fixture["workspace"].id)
-    request_body = {
-        "workspaceId": str(create_workspace_with_users_fixture["workspace"].id),
-        "userId": str(create_workspace_with_users_fixture["users"][0].id)
-    }
-    response = requests.delete(url=base_url + '/user', json=request_body,
+    response = requests.delete(url=base_url + "/" + str(create_workspace_with_users_fixture["workspace"].id) + '/user/' + str(create_workspace_with_users_fixture["users"][0].id),
                             headers={"Authorization": token})                
     assert response.status_code == 200
     workspace_after_changes = workspace_service.get_workspace(workspace_id=create_workspace_with_users_fixture["workspace"].id)
@@ -257,12 +253,26 @@ def test_remove_user_from_workspace(create_workspace_with_users_fixture):
 def test_remove_user_from_workspace_without_permission(create_workspace_with_users_fixture):
     workspace_before_changes = workspace_service.get_workspace(workspace_id=create_workspace_with_users_fixture["workspace"].id)
     remove_user_workspace_permission(create_workspace_with_users_fixture["workspace"].id, WorkspacePermission.MANAGE_WORKSPACE)
-    request_body = {
-        "workspaceId": str(create_workspace_with_users_fixture["workspace"].id),
-        "userId": str(create_workspace_with_users_fixture["users"][0].id)
-    }
-    response = requests.delete(url=base_url + '/user', json=request_body,
-                            headers={"Authorization": token})                      
+    response = requests.delete(url=base_url + "/" + str(create_workspace_with_users_fixture["workspace"].id) + '/user/' + str(create_workspace_with_users_fixture["users"][0].id),
+                            headers={"Authorization": token})                       
+    assert response.status_code == 403
+    workspace_after_changes = workspace_service.get_workspace(workspace_id=create_workspace_with_users_fixture["workspace"].id)
+    assert len(workspace_before_changes.users) == len(workspace_after_changes.users)
+
+def test_remove_user_from_workspace_without_being_in_workspace(create_workspace_with_users_fixture, create_dummy_user_with_token_fixture):
+    workspace_before_changes = workspace_service.get_workspace(workspace_id=create_workspace_with_users_fixture["workspace"].id)
+    remove_user_workspace_permission(create_workspace_with_users_fixture["workspace"].id, WorkspacePermission.MANAGE_WORKSPACE)
+    response = requests.delete(url=base_url + "/" + str(create_workspace_with_users_fixture["workspace"].id) + '/user/' + str(create_workspace_with_users_fixture["users"][0].id),
+                            headers={"Authorization": create_dummy_user_with_token_fixture['token']})                       
+    assert response.status_code == 403
+    workspace_after_changes = workspace_service.get_workspace(workspace_id=create_workspace_with_users_fixture["workspace"].id)
+    assert len(workspace_before_changes.users) == len(workspace_after_changes.users)
+
+def test_remove_user_not_in_workspace_from_workspace(create_workspace_with_users_fixture):
+    workspace_before_changes = workspace_service.get_workspace(workspace_id=create_workspace_with_users_fixture["workspace"].id)
+    remove_user_workspace_permission(create_workspace_with_users_fixture["workspace"].id, WorkspacePermission.MANAGE_WORKSPACE)
+    response = requests.delete(url=base_url + "/" + str(create_workspace_with_users_fixture["workspace"].id) + '/user/' + str(create_workspace_with_users_fixture["users"][0].id),
+                            headers={"Authorization": token})                       
     assert response.status_code == 403
     workspace_after_changes = workspace_service.get_workspace(workspace_id=create_workspace_with_users_fixture["workspace"].id)
     assert len(workspace_before_changes.users) == len(workspace_after_changes.users)
@@ -343,3 +353,21 @@ def test_get_projects_for_workspace_user_not_in_project(create_projects_fixture,
     assert response.status_code == 200
     result = json.loads(response.content.decode())
     assert len(result) == 0
+
+def test_leave_workspace(create_workspace_with_users_fixture):
+    workspace_before_changes = workspace_service.get_workspace(workspace_id=create_workspace_with_users_fixture["workspace"].id)
+    response = requests.delete(url=base_url + "/" + str(create_workspace_with_users_fixture["workspace"].id) + '/current-user',
+                            headers={"Authorization": token})                
+    assert response.status_code == 200
+    workspace_after_changes = workspace_service.get_workspace(workspace_id=create_workspace_with_users_fixture["workspace"].id)
+    assert len(workspace_before_changes.users) == len(workspace_after_changes.users)+1
+    for u in workspace_after_changes.users:
+        assert u.userId != user.id
+
+def test_leave_workspace_user_not_in_workspace(create_workspace_fixture, create_dummy_user_with_token_fixture):
+    workspace_before_changes = workspace_service.get_workspace(workspace_id=create_workspace_fixture.id)
+    response = requests.delete(url=base_url + "/" + str(create_workspace_fixture.id) + '/current-user',
+                            headers={"Authorization": create_dummy_user_with_token_fixture['token']})
+    assert response.status_code == 400
+    workspace_after_changes = workspace_service.get_workspace(workspace_id=create_workspace_fixture.id)
+    assert len(workspace_before_changes.users) == len(workspace_after_changes.users)
