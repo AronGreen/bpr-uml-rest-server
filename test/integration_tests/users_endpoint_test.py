@@ -29,11 +29,11 @@ def before_test():
 
 @pytest.fixture
 def make_user_invitations_fixture() -> list:
-    return util.make_user_invitations_fixture(token, user)
+    return util.make_user_invitations_fixture(user)
 
 @pytest.fixture
 def create_workspaces_with_users_and_teams_fixture() -> dict:
-    return util.create_workspaces_with_users_and_teams_fixture(token)
+    return util.create_workspaces_with_users_and_teams_fixture(user.firebaseId)
 
 def test_ensure_user_exists():
     response = requests.post(url=base_url, headers={"Authorization": token})

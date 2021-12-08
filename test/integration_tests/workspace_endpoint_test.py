@@ -1,3 +1,4 @@
+from bson import ObjectId
 import pytest
 import requests
 import json
@@ -6,6 +7,7 @@ from bpr_data.repository import Repository, Collection
 from bpr_data.models.workspace import Workspace, WorkspaceUser
 from bpr_data.models.invitation import Invitation
 from bpr_data.models.permission import WorkspacePermission
+from bpr_data.models.project import Project, ProjectUser
 
 from src.models.web_workspace_user import WebWorkspaceUser
 import src.services.invitation_service
@@ -32,12 +34,12 @@ def before_test():
 
 @pytest.fixture
 def create_workspace_fixture() -> Workspace:
-    return util.create_workspace_fixture(token)
+    return util.create_workspace_fixture(user.firebaseId)
 
 
 @pytest.fixture
 def create_workspaces_fixture() -> list:
-    return util.create_workspaces_fixture(token)
+    return util.create_workspaces_fixture(user.firebaseId)
 
 
 @pytest.fixture
@@ -46,13 +48,13 @@ def create_dummy_users_fixture() -> list:
 
 @pytest.fixture
 def create_workspace_with_users_fixture() -> dict:
-    return util.create_workspace_with_users_fixture(token)
+    return util.create_workspace_with_users_fixture(user.firebaseId)
 
 @pytest.fixture
 def invite_user_fixture() -> dict:
-    workspace = util.create_workspace_fixture(token)
-    user = util.create_dummy_user_with_token_fixture()
-    invitee_email_address = user["user"].email
+    workspace = util.create_workspace_fixture(user.firebaseId)
+    second_user = util.create_dummy_user_with_token_fixture()
+    invitee_email_address = second_user["user"].email
     request_body = {
         "workspaceId": str(workspace.id),
         "inviteeEmailAddress": invitee_email_address
@@ -62,7 +64,7 @@ def invite_user_fixture() -> dict:
     response = json.loads(response.content.decode())
     created_resources[response["_id"]] = Collection.INVITATION
     return {
-        "user_with_token": user,
+        "user_with_token": second_user,
         "workspace_id": str(workspace.id),
         "invitation_id": str(response["_id"])
     }
@@ -71,8 +73,38 @@ def invite_user_fixture() -> dict:
 def create_dummy_user_with_token_fixture() -> dict:
     return util.create_dummy_user_with_token_fixture()
 
-def remove_user_workspace_permission(workspace_id: str, permission: WorkspacePermission):
-    util.remove_user_workspace_permission(workspace_id=workspace_id, permission=permission, user_id=str(user.id), token=token)
+@pytest.fixture
+def create_projects_fixture() -> list:
+    workspace = util.create_workspace_fixture(user.firebaseId)
+    projects = util.create_projects_fixture(workspace_id=workspace.id, user_firebase_id=user.firebaseId)
+
+    project3 = Project(
+        _id=None,
+        title="some title",
+        workspaceId=ObjectId(workspace.id),
+        teams=list(),
+        users=[],
+        folders=[])
+    project3 = Project.from_dict(repo.insert(Collection.PROJECT, project3))
+
+    workspace2 = util.create_workspace_fixture(user.firebaseId)
+    project4 = Project(
+        _id=None,
+        title="some title",
+        workspaceId=ObjectId(workspace2.id),
+        teams=list(),
+        users=[user.id],
+        folders=[])
+    project4 = Project.from_dict(repo.insert(Collection.PROJECT, project4))
+    created_resources[project3._id] = Collection.PROJECT
+    created_resources[project4._id] = Collection.PROJECT
+
+    projects.extend([project3, project4])
+    return projects
+
+
+def remove_user_workspace_permission(workspace_id: ObjectId, permission: WorkspacePermission):
+    util.remove_user_workspace_permission(workspace_id=workspace_id, permission=permission, user_id=user.id)
     
 
 def test_get_workspace(create_workspace_fixture):
@@ -135,7 +167,7 @@ def test_change_user_permissions(create_workspace_with_users_fixture):
             assert len(user["permissions"]) == 1
     
 def test_change_user_permissions_without_permission(create_workspace_with_users_fixture):
-    remove_user_workspace_permission(str(create_workspace_with_users_fixture["workspace"].id), WorkspacePermission.MANAGE_PERMISSIONS)
+    remove_user_workspace_permission(create_workspace_with_users_fixture["workspace"].id, WorkspacePermission.MANAGE_PERMISSIONS)
     request_body = {
         "permissions": [
             "MANAGE_PERMISSIONS",
@@ -171,7 +203,7 @@ def test_invite_user(create_workspace_fixture):
     created_resources[invitation._id] = Collection.INVITATION
 
 def test_invite_user_without_permission(create_workspace_fixture):
-    remove_user_workspace_permission(str(create_workspace_fixture.id), WorkspacePermission.MANAGE_WORKSPACE)
+    remove_user_workspace_permission(create_workspace_fixture.id, WorkspacePermission.MANAGE_WORKSPACE)
     invitee_email_address = "abc@gmail.com"
     request_body = {
         "workspaceId": str(create_workspace_fixture.id),
@@ -224,7 +256,7 @@ def test_remove_user_from_workspace(create_workspace_with_users_fixture):
 
 def test_remove_user_from_workspace_without_permission(create_workspace_with_users_fixture):
     workspace_before_changes = workspace_service.get_workspace(workspace_id=create_workspace_with_users_fixture["workspace"].id)
-    remove_user_workspace_permission(str(create_workspace_with_users_fixture["workspace"].id), WorkspacePermission.MANAGE_WORKSPACE)
+    remove_user_workspace_permission(create_workspace_with_users_fixture["workspace"].id, WorkspacePermission.MANAGE_WORKSPACE)
     request_body = {
         "workspaceId": str(create_workspace_with_users_fixture["workspace"].id),
         "userId": str(create_workspace_with_users_fixture["users"][0].id)
@@ -263,7 +295,7 @@ def test_update_workspace_name(create_workspace_fixture):
     assert workspace.name == new_name
 
 def test_update_workspace_name_without_permission(create_workspace_fixture):
-    remove_user_workspace_permission(str(create_workspace_fixture.id), WorkspacePermission.MANAGE_WORKSPACE)
+    remove_user_workspace_permission(create_workspace_fixture.id, WorkspacePermission.MANAGE_WORKSPACE)
     new_name = "new name for workspace"
     request_body = {
         "name": new_name
@@ -279,7 +311,7 @@ def test_delete_workspace(create_workspace_fixture):
     assert repo.find_one(collection=Collection.WORKSPACE, _id=create_workspace_fixture.id) == None
 
 def test_delete_workspace_without_permission(create_workspace_fixture):
-    remove_user_workspace_permission(str(create_workspace_fixture.id), WorkspacePermission.MANAGE_WORKSPACE)
+    remove_user_workspace_permission(create_workspace_fixture.id, WorkspacePermission.MANAGE_WORKSPACE)
     response = requests.delete(url=base_url + '/' + str(create_workspace_fixture.id),
                             headers={"Authorization": token})
     assert response.status_code == 403
@@ -291,3 +323,23 @@ def test_get_workspace_user(create_workspace_fixture):
     assert response.status_code == 200
     current_user = WorkspaceUser.from_json(response.content.decode())
     assert str(user.id) == current_user.userId
+
+def test_get_projects_for_workspace(create_projects_fixture):
+    response = requests.get(url=base_url + "/" + str(create_projects_fixture[0].workspaceId) + "/projects",
+                            headers={"Authorization": token})
+    assert response.status_code == 200
+    result = Project.from_json_list(response.content.decode())
+    for project in result:
+        project.users = ProjectUser.from_dict_list(project.users)
+    assert len(result) == 2
+    assert result[0].id == create_projects_fixture[0].id
+    assert result[1].id == create_projects_fixture[1].id
+    assert create_projects_fixture[2].id not in [project.id for project in result]
+    assert create_projects_fixture[3].id not in [project.id for project in result]
+
+def test_get_projects_for_workspace_user_not_in_project(create_projects_fixture, create_dummy_user_with_token_fixture):
+    response = requests.get(url=base_url + "/" + str(create_projects_fixture[0].workspaceId) + "/projects",
+                            headers={"Authorization": create_dummy_user_with_token_fixture["token"]})
+    assert response.status_code == 200
+    result = json.loads(response.content.decode())
+    assert len(result) == 0

@@ -1,6 +1,5 @@
-from bpr_data.models.project import ProjectUser, ProjectTeam
 from flask import Blueprint, g, request, abort, Response
-from bpr_data.models.project import Project
+from bpr_data.models.project import Project, ProjectUser, ProjectTeam
 from bpr_data.models.response import ApiResponse
 from bpr_data.models.permission import WorkspacePermission
 from bson import ObjectId

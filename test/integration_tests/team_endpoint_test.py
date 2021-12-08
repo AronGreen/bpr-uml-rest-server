@@ -1,3 +1,4 @@
+from bson.objectid import ObjectId
 import pytest
 import requests
 import endpoint_test_util as util
@@ -26,27 +27,27 @@ def before_test():
 
 @pytest.fixture
 def create_workspace_fixture():
-    return util.create_workspace_fixture(token)
+    return util.create_workspace_fixture(user.firebaseId)
 
 
 @pytest.fixture
 def create_workspace_with_users_and_empty_team_fixture():
-    return util.create_workspace_with_users_and_empty_team_fixture(token)
+    return util.create_workspace_with_users_and_empty_team_fixture(user.firebaseId)
 
 @pytest.fixture
 def create_workspace_with_users_and_team_fixture():
-    return util.create_workspace_with_users_and_team_fixture(token)
+    return util.create_workspace_with_users_and_team_fixture(user.firebaseId)
 
 @pytest.fixture
 def create_workspace_with_empty_team_fixture():
-    return util.create_workspace_with_empty_team_fixture(token)
+    return util.create_workspace_with_empty_team_fixture(user.firebaseId)
 
 @pytest.fixture
 def create_dummy_user_with_token_fixture() -> dict:
     return util.create_dummy_user_with_token_fixture()
 
-def remove_user_workspace_permission(workspace_id: str, permission: WorkspacePermission):
-    util.remove_user_workspace_permission(workspace_id=workspace_id, permission=permission, user_id=str(user.id), token=token)
+def remove_user_workspace_permission(workspace_id: ObjectId, permission: WorkspacePermission):
+    util.remove_user_workspace_permission(workspace_id=workspace_id, permission=permission, user_id=user.id)
 
 def test_get_workspace_teams(create_workspace_with_empty_team_fixture, create_dummy_user_with_token_fixture):
     response = requests.get(url=base_url + "workspaces/" + str(create_workspace_with_empty_team_fixture["workspace"].id) + "/teams", headers={"Authorization": token})
@@ -75,7 +76,7 @@ def test_create_team(create_workspace_fixture):
     created_resources[team._id] = Collection.TEAM
 
 def test_create_team_without_permission(create_workspace_fixture):
-    remove_user_workspace_permission(str(create_workspace_fixture.id), WorkspacePermission.MANAGE_TEAMS)
+    remove_user_workspace_permission(create_workspace_fixture.id, WorkspacePermission.MANAGE_TEAMS)
     request_body = {
         "name": "team_name1",
         "workspaceId": str(create_workspace_fixture.id)
@@ -85,7 +86,7 @@ def test_create_team_without_permission(create_workspace_fixture):
     assert repo.find_one(collection=Collection.TEAM, name="team_name1") == None
 
 def test_create_team_without_being_in_workspace(create_workspace_fixture, create_dummy_user_with_token_fixture):
-    remove_user_workspace_permission(str(create_workspace_fixture.id), WorkspacePermission.MANAGE_TEAMS)
+    remove_user_workspace_permission(create_workspace_fixture.id, WorkspacePermission.MANAGE_TEAMS)
     request_body = {
         "name": "team_name2",
         "workspaceId": str(create_workspace_fixture.id)
@@ -112,7 +113,7 @@ def test_add_users_to_team(create_workspace_with_users_and_empty_team_fixture):
     assert str(user_2.userId) in [user.userId for user in result.users]
 
 def test_add_users_to_team_without_permission(create_workspace_with_users_and_empty_team_fixture):
-    remove_user_workspace_permission(workspace_id=str(create_workspace_with_users_and_empty_team_fixture["workspace"].id), permission=WorkspacePermission.MANAGE_TEAMS)
+    remove_user_workspace_permission(workspace_id=create_workspace_with_users_and_empty_team_fixture["workspace"].id, permission=WorkspacePermission.MANAGE_TEAMS)
     user_1 = TeamUser(userId=create_workspace_with_users_and_empty_team_fixture["users"][0].id)
     user_2 = TeamUser(userId=create_workspace_with_users_and_empty_team_fixture["users"][1].id)
 
@@ -155,7 +156,7 @@ def test_replace_users_in_team(create_workspace_with_users_and_team_fixture):
     assert str(user_1.userId) in [user.userId for user in result.users]
 
 def test_replace_users_in_team_without_permission(create_workspace_with_users_and_empty_team_fixture):
-    remove_user_workspace_permission(workspace_id=str(create_workspace_with_users_and_empty_team_fixture["workspace"].id), permission=WorkspacePermission.MANAGE_TEAMS)
+    remove_user_workspace_permission(workspace_id=create_workspace_with_users_and_empty_team_fixture["workspace"].id, permission=WorkspacePermission.MANAGE_TEAMS)
     user_1 = TeamUser(userId=str(create_workspace_with_users_and_empty_team_fixture["users"][0].id))
 
     request_body = {
@@ -194,7 +195,7 @@ def test_update_team_name(create_workspace_with_empty_team_fixture):
     assert team.name == team_name
 
 def test_update_team_name_without_permission(create_workspace_with_empty_team_fixture):
-    remove_user_workspace_permission(workspace_id=str(create_workspace_with_empty_team_fixture["workspace"].id), permission=WorkspacePermission.MANAGE_TEAMS)
+    remove_user_workspace_permission(workspace_id=create_workspace_with_empty_team_fixture["workspace"].id, permission=WorkspacePermission.MANAGE_TEAMS)
     team_name = "team_name_1"
     request_body = {
         "name": team_name
@@ -238,14 +239,14 @@ def test_delete_team(create_workspace_with_empty_team_fixture):
     assert repo.find_one(collection=Collection.TEAM, _id=create_workspace_with_empty_team_fixture["team"].id) == None
 
 def test_delete_team_without_permission(create_workspace_with_empty_team_fixture):
-    remove_user_workspace_permission(workspace_id=str(create_workspace_with_empty_team_fixture["workspace"].id), permission=WorkspacePermission.MANAGE_TEAMS)
+    remove_user_workspace_permission(workspace_id=create_workspace_with_empty_team_fixture["workspace"].id, permission=WorkspacePermission.MANAGE_TEAMS)
     response = requests.delete(url=base_url + "/teams/" + str(create_workspace_with_empty_team_fixture["team"].id), 
                             headers={"Authorization": token})
     assert response.status_code == 403
     assert teams_service.get_team(create_workspace_with_empty_team_fixture["team"].id) is not None
 
 def test_delete_team_without_being_in_workspace(create_workspace_with_empty_team_fixture, create_dummy_user_with_token_fixture):
-    remove_user_workspace_permission(workspace_id=str(create_workspace_with_empty_team_fixture["workspace"].id), permission=WorkspacePermission.MANAGE_TEAMS)
+    remove_user_workspace_permission(workspace_id=create_workspace_with_empty_team_fixture["workspace"].id, permission=WorkspacePermission.MANAGE_TEAMS)
     response = requests.delete(url=base_url + "/teams/" + str(create_workspace_with_empty_team_fixture["team"].id), 
                             headers={"Authorization": create_dummy_user_with_token_fixture["token"]})
     assert response.status_code == 403
