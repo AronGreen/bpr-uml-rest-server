@@ -65,12 +65,11 @@ def get_project(projectId: str):
         description: project data
       404:
          description: Project not found
+      403:
+         description: User does not have access to the project
     """
-    try:
-        result = project_service.get_full_project_for_user(project_id=projectId, firebase_id=g.firebase_id)
-        return Response(result.as_json(), mimetype="application/json")
-    except AttributeError:
-        abort(404, "Project not found")
+    result = project_service.get_full_project_for_user(project_id=projectId, firebase_id=g.firebase_id)
+    return Response(result.as_json(), mimetype="application/json")
 
 
 @api.route("/<projectId>/users", methods=['POST'])

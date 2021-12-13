@@ -1,6 +1,6 @@
 from flask import Blueprint, g, request, abort, Response
 
-from src.services import diagram_service
+from src.services import diagram_service, permission_service
 
 api = Blueprint('diagrams_api', __name__)
 
@@ -54,6 +54,7 @@ def create_diagram():
       """
     request_data = request.get_json()
     try:
+        permission_service.check_is_editor(firebase_id=g.firebase_id, project_id=request_data['projectId'])
         create_result = diagram_service.create_diagram(
             title=request_data['title'],
             projectId=request_data['projectId'],
