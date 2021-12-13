@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from bpr_data.models.project import Project
 from bson import ObjectId
 from flask import g, abort
 
 from bpr_data.repository import Repository, Collection
 from bpr_data.models.invitation import Invitation
-from bpr_data.models.user import User
 from bpr_data.models.workspace import Workspace, WorkspaceUser
 from bpr_data.models.permission import WorkspacePermission
 from bpr_data.models.team import Team
@@ -15,7 +13,6 @@ import src.util.email_utils as email
 import src.services.email_service as email_service
 import src.services.users_service as users_service
 import src.services.invitation_service as invitation_service
-import src.services.permission_service as permission_service
 import settings
 from src.models.web_workspace_user import WebWorkspaceUser
 
@@ -26,7 +23,7 @@ collection = Collection.WORKSPACE
 
 def create_workspace(workspace: Workspace, firebase_id: str) -> Workspace:
     creator = users_service.get_user_by_firebase_id(firebase_id=firebase_id)
-    workspace_user = WorkspaceUser(userId = creator.id, permissions=list(WorkspacePermission))
+    workspace_user = WorkspaceUser(userId = creator.id, permissions=[permission.value for permission in list(WorkspacePermission)])
     workspace.users = [workspace_user]
     created_workspace = db.insert(collection, workspace)
     if created_workspace is not None:
@@ -220,10 +217,10 @@ def update_user_permissions(workspace_id: ObjectId, user_id: ObjectId, permissio
     workspace = get_workspace(workspace_id=workspace_id)
     if workspace is None:
         abort(404, description="Workspace not found")
-    permissions = permission_service.convert_to_workspace_permissions_enums(permissions)
+    permissions = WorkspacePermission.convert_strings_to_workspace_permissions_enums(permissions)
     for i in range(len(workspace.users)):
         if user_id == workspace.users[i].userId:
-            workspace.users[i].permissions = permissions
+            workspace.users[i].permissions = [permission.value for permission in permissions]
     db.update(collection=collection, item=workspace)
     return get_workspace(workspace_id=ObjectId(workspace_id))
 

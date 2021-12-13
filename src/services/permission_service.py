@@ -1,15 +1,7 @@
-from bpr_data.models.permission import WorkspacePermission
 from bson import ObjectId
 import src.services.workspace_service as workspace_service
 import src.services.project_service as project_service
 from flask import abort
-
-
-def convert_to_workspace_permissions_enums(permissions: list):
-    enum_permissions = []
-    for permission in permissions:
-        enum_permissions.append(WorkspacePermission(permission))
-    return enum_permissions
 
 
 def check_permissions(firebase_id: str, workspace_id: ObjectId, permissions: list):
